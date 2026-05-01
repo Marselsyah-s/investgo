@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import LessonPage from './pages/LessonPage'
 import Rewards from './pages/Rewards'
+import Profile from './pages/Profile'
 import CharakterQuiz from './components/CharakterQuiz/CharakterQuiz'
 import './index.css'
 
@@ -34,6 +35,7 @@ function App() {
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
+        <Route path="/profile" element={<DashboardLayout><Profile /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
         <Route 
           path="/sandbox" 
