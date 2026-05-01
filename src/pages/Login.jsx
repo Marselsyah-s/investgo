@@ -11,15 +11,28 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
+  // Kita gunakan logika dari branch 'main' agar routing ke '/quiz' berfungsi
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
     setErrorMsg('')
-
+    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
       if (error) throw error
-      if (data.user) navigate('/dashboard')
+
+      if (data.user) {
+        const hasTakenQuiz = localStorage.getItem('hasTakenQuiz')
+        if (!hasTakenQuiz) {
+          navigate('/quiz')
+        } else {
+          navigate('/dashboard')
+        }
+      }
     } catch (error) {
       setErrorMsg(error.message || 'Gagal masuk. Periksa kembali email dan password Anda.')
     } finally {
@@ -27,6 +40,7 @@ export default function Login() {
     }
   }
 
+  // Kita gunakan UI dari branch 'login-signup' karena desainnya lebih lengkap
   return (
     <>
       <style>{`
