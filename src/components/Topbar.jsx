@@ -9,11 +9,12 @@ export default function Topbar() {
   const { coins, hearts, refresh } = useUserStats()
   const [user, setUser] = useState(null)
   const [isRefilling, setIsRefilling] = useState(false)
+  const [showNoCoinsModal, setShowNoCoinsModal] = useState(false)
 
   const handleRefill = async (e) => {
     e.stopPropagation()
     if (coins < 50) {
-      alert('Koin tidak cukup! Selesaikan kuis untuk dapat koin.')
+      setShowNoCoinsModal(true)
       return
     }
 
@@ -297,6 +298,72 @@ export default function Topbar() {
           {getDisplayName()}
         </span>
       </button>
+      {/* Insufficient Coins Modal */}
+      {showNoCoinsModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'white', width: '90%', maxWidth: 400, borderRadius: 28, padding: 32,
+            textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            animation: 'modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            <style>{`
+              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes modalSlideUp { 
+                from { opacity: 0; transform: translateY(20px) scale(0.9); } 
+                to { opacity: 1; transform: translateY(0) scale(1); } 
+              }
+            `}</style>
+            
+            <div style={{ 
+              width: 80, height: 80, background: '#fee2e2', borderRadius: '50%', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px'
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%', background: '#FFC107',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 24, fontWeight: 900, boxShadow: '0 4px 10px rgba(255,193,7,0.4)'
+              }}>C</div>
+            </div>
+
+            <h3 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 12 }}>Koin Tidak Cukup</h3>
+            <p style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.5, marginBottom: 32 }}>
+              Kamu butuh <strong>50 koin</strong> untuk memulihkan nyawa. Ayo kumpulkan koin dengan menyelesaikan kuis!
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button 
+                onClick={() => {
+                  setShowNoCoinsModal(false)
+                  navigate('/rewards')
+                }}
+                style={{
+                  width: '100%', padding: '16px', background: '#00D166', color: 'white',
+                  borderRadius: 16, border: 'none', fontWeight: 800, fontSize: 16,
+                  cursor: 'pointer', boxShadow: '0 4px 0 #00a652', transition: 'all 0.1s'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                CARI KOIN SEKARANG
+              </button>
+              <button 
+                onClick={() => setShowNoCoinsModal(false)}
+                style={{
+                  width: '100%', padding: '12px', background: 'transparent', color: '#9ca3af',
+                  borderRadius: 16, border: 'none', fontWeight: 700, fontSize: 14,
+                  cursor: 'pointer'
+                }}
+              >
+                NANTI SAJA
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
