@@ -94,9 +94,9 @@ function HeroSection() {
               Kuasai saham, reksa dana, dan kripto lewat modul interaktif, virtual trading simulator, dan sistem reward gamified — gratis selamanya.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <a href="/register" className="btn-primary" style={{ fontSize: 15, padding: '13px 28px' }}>
+              <Link to="/register" className="btn-primary" style={{ fontSize: 15, padding: '13px 28px' }}>
                 Mulai Belajar Gratis <ArrowRight size={16} />
-              </a>
+              </Link>
               <a href="#how-it-works" className="btn-outlined" style={{ fontSize: 15, padding: '13px 28px' }}>
                 Lihat Cara Kerja
               </a>
@@ -354,9 +354,9 @@ function CTASection() {
             Bergabung dengan 50.000+ pelajar yang sudah menguasai dunia investasi bersama InvestaGo. Gratis selamanya!
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/register" className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }}>
+            <Link to="/register" className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }}>
               Daftar Sekarang — Gratis! <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
           <p style={{ fontSize: 13, color: '#a0a8b5', marginTop: 16 }}>Tidak perlu kartu kredit • Bisa mulai dalam 30 detik</p>
         </div>

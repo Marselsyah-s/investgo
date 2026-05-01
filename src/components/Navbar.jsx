@@ -88,12 +88,12 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} className="desktop-nav">
-          <a href="/login" className="btn-outlined" style={{ padding: '9px 20px', fontSize: 14 }}>
+          <Link to="/login" className="btn-outlined" style={{ padding: '9px 20px', fontSize: 14 }}>
             Masuk
-          </a>
-          <a href="/register" className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>
+          </Link>
+          <Link to="/register" className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>
             Mulai Gratis
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -141,8 +141,8 @@ export default function Navbar() {
             </a>
           ))}
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <a href="/login" className="btn-outlined" style={{ flex: 1, justifyContent: 'center' }}>Masuk</a>
-            <a href="/register" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Mulai Gratis</a>
+            <Link to="/login" className="btn-outlined" style={{ flex: 1, justifyContent: 'center' }}>Masuk</Link>
+            <Link to="/register" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Mulai Gratis</Link>
           </div>
         </div>
       )}
