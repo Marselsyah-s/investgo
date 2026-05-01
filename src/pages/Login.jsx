@@ -24,7 +24,12 @@ export default function Login() {
       if (error) throw error
 
       if (data.user) {
-        navigate('/dashboard')
+        const hasTakenQuiz = localStorage.getItem('hasTakenQuiz')
+        if (!hasTakenQuiz) {
+          navigate('/quiz')
+        } else {
+          navigate('/dashboard')
+        }
       }
     } catch (error) {
       setErrorMsg(error.message || 'Gagal masuk. Periksa kembali email dan password Anda.')
@@ -98,7 +103,7 @@ export default function Login() {
                 Email
               </label>
               <input 
-                type="email" 
+                type="email " 
                 placeholder="nama@email.com"
                 required
                 value={email}
