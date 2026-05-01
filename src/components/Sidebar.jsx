@@ -7,11 +7,7 @@ export default function Sidebar() {
   const navItems = [
     { icon: <Map size={22} />, label: 'Learning Path', path: '/dashboard' },
     { icon: <Gift size={22} />, label: 'Rewards & XP', path: '/rewards' },
-<<<<<<< HEAD
     { icon: <Bot size={22} />, label: 'AI Tutor', path: '/dashboard/ai-tutor' },
-=======
-    { icon: <Bot size={22} />, label: 'AI Tutor', path: '/tutor' },
->>>>>>> 4843707375dd08229cb2f42f571706f7d944e0f7
     { icon: <BarChart3 size={22} />, label: 'Market Sandbox', path: '/sandbox' },
     { icon: <Users size={22} />, label: 'Mentorship & Funding', path: '/mentorship' },
   ]
@@ -23,13 +19,8 @@ export default function Sidebar() {
       position: 'fixed',
       left: 0,
       top: 0,
-<<<<<<< HEAD
-      background: '#F0F2F5', // Slightly gray background to match the screenshot
-      borderRight: '1px solid #e2e5ea',
-=======
       background: '#F7F9FA',
       borderRight: 'none',
->>>>>>> 4843707375dd08229cb2f42f571706f7d944e0f7
       display: 'flex',
       flexDirection: 'column',
       padding: '24px 16px',
@@ -37,13 +28,8 @@ export default function Sidebar() {
     }}>
       {/* Logo */}
       <Link to="/" style={{ textDecoration: 'none', padding: '0 12px', marginBottom: 40 }}>
-<<<<<<< HEAD
         <h1 style={{ fontWeight: 800, fontSize: 24, color: '#004d26', letterSpacing: '-0.5px' }}>
           InvestGo
-=======
-        <h1 style={{ fontWeight: 800, fontSize: 24, color: '#00D166', letterSpacing: '-0.5px' }}>
-          SavvyBull
->>>>>>> 4843707375dd08229cb2f42f571706f7d944e0f7
         </h1>
       </Link>
 

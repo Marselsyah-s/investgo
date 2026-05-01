@@ -65,21 +65,47 @@ const Chatbot = () => {
     };
 
     const sendMessage = async () => {
-        if (!input.trim()) return;
-        const newMessages = [...messages, { sender: 'user', text: input }];
+        // KOREKSI: Gunakan imagePreview (URL untuk UI) sebagai pengecekan
+        if (!input.trim() && !imagePreview) return;
+
+        // --- LANGKAH 1: GUNAKAN KONSTANTA ---
+        const currentInput = input;
+        const currentImageForUI = imagePreview; // Untuk ditampilin di bubble chat
+        const currentImageForAPI = selectedImage; // Base64 murni untuk dikirim ke Python
+
+        // Masukkan gambar ke dalam objek pesan agar bisa tampil di bubble chat
+        const userMessage = {
+            sender: 'user',
+            text: currentInput,
+            image: currentImageForUI // Simpan DataURL di sini
+        };
+
+        const newMessages = [...messages, userMessage];
         setMessages(newMessages);
+
+        // KOREKSI: Reset semua state form agar gambar hilang dari input area
         setInput('');
+        setImagePreview(null);
+        setSelectedImage(null);
+
         setIsLoading(true);
+
         try {
             const response = await fetch('http://127.0.0.1:8000/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: input, is_roasting: isRoasting, pdf_context: pdfContext, image_data: selectedImage })
+                body: JSON.stringify({
+                    message: currentInput,
+                    is_roasting: isRoasting,
+                    pdf_context: pdfContext,
+                    image_data: currentImageForAPI // Kirim Base64 murni ke backend
+                })
             });
+
             const data = await response.json();
             setMessages([...newMessages, { sender: 'bot', text: data.reply }]);
         } catch (error) {
-            setMessages([...newMessages, { sender: 'bot', text: 'Server Bang Cuan lagi ngadat nih bro.' }]);
+            console.error("Error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -104,7 +130,20 @@ const Chatbot = () => {
                                 ? 'bg-[#00C853] text-white rounded-tr-none'
                                 : 'bg-[#F1F3F5] text-slate-700 rounded-tl-none'
                                 }`}>
-                                {msg.text}
+
+                                {/* 1. Render Teks Pesan */}
+                                {msg.text && <div>{msg.text}</div>}
+
+                                {/* 2. Render Gambar (Jika Ada di History) */}
+                                {msg.image && (
+                                    <div className="mt-2">
+                                        <img
+                                            src={msg.image}
+                                            alt="Chat Attachment"
+                                            className="max-w-[200px] h-auto rounded-lg border border-white/20 shadow-md"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

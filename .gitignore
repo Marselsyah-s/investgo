@@ -36,3 +36,6 @@ ENV/
 .DS_Store
 Thumbs.db
 .env
+
+VITE_SUPABASE_URL=https://xyz.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
