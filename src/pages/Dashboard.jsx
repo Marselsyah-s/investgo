@@ -1,9 +1,10 @@
 import React from 'react'
-import { Star, Lock, Zap, Play, Database } from 'lucide-react'
+import { Lock, Zap, Database, CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useLevels } from '../hooks/useCurriculum'
 import { seedCurriculum } from '../data/seedCurriculum'
 import RightSidebar from '../components/RightSidebar'
+import { useProgress } from '../hooks/useProgress'
 
 // Geometry Constants
 const CW = 460
@@ -52,6 +53,7 @@ function makePath(A, B) {
 export default function Dashboard() {
   const navigate = useNavigate()
   const { levels, loading, error: fetchError } = useLevels()
+  const { completedLessons, totalXp, loading: progressLoading } = useProgress()
   const [seeding, setSeeding] = React.useState(false)
 
   // Auto-seed if database is empty
@@ -77,7 +79,7 @@ export default function Dashboard() {
     autoSeed()
   }, [loading, levels, seeding])
 
-  if (loading || (levels.length === 0 && seeding)) return (
+  if (loading || progressLoading || (levels.length === 0 && seeding)) return (
     <div style={{ display: 'flex', height: '60vh', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
       <div style={{ fontWeight: 800, color: '#00D166', fontSize: 20 }}>Menyiapkan Kurikulum...</div>
       <div style={{ fontSize: 14, color: '#6b7280' }}>Sedang mengisi 50 materi investasi ke database kamu.</div>
@@ -109,6 +111,16 @@ export default function Dashboard() {
           <p style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.6, maxWidth: '60%', position: 'relative', zIndex: 2 }}>
             Selesaikan 10 level untuk menjadi investor profesional. Dari dasar keuangan hingga portofolio impian.
           </p>
+          <div style={{ display: 'flex', gap: 16, marginTop: 16, position: 'relative', zIndex: 2 }}>
+            <div style={{ background: 'white', borderRadius: 12, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle size={16} color="#00D166" />
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{completedLessons.size} Pelajaran Selesai</span>
+            </div>
+            <div style={{ background: 'white', borderRadius: 12, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Zap size={16} color="#FFC107" fill="#FFC107" />
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{totalXp.toLocaleString('id-ID')} XP Total</span>
+            </div>
+          </div>
           <div style={{ position: 'absolute', right: 40, bottom: -10, opacity: 0.2 }}>
              <Zap size={120} color="#1f2937" fill="#1f2937" />
           </div>
@@ -156,7 +168,11 @@ export default function Dashboard() {
                   const currentIdx = startIdx + i
                   const pos = nodePositions[currentIdx]
                   const localY = pos.cy - (startIdx * VERTICAL_GAP)
-                  const isLocked = currentIdx > 0 // Temporary logic: all except first are locked
+                  const isDone = completedLessons.has(less.id)
+                  
+                  // Lesson pertama selalu terbuka. Lesson berikutnya terbuka jika lesson sebelumnya sudah selesai.
+                  const prevLesson = allLessons[currentIdx - 1]
+                  const isLocked = currentIdx > 0 && !completedLessons.has(prevLesson?.id)
                   
                   return (
                     <div key={less.id} style={{ position: 'absolute', left: pos.cx - pos.r, top: localY - pos.r, width: pos.r * 2, height: pos.r * 2 }}>
@@ -164,16 +180,23 @@ export default function Dashboard() {
                         onClick={() => !isLocked && navigate(`/lesson/${less.id}`)}
                         style={{
                           width: '100%', height: '100%', borderRadius: '50%', 
-                          background: isLocked ? '#c8cdd6' : lvl.color,
+                          background: isLocked ? '#c8cdd6' : isDone ? '#00a652' : lvl.color,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          boxShadow: isLocked ? '0 8px 0 #a0a8b5' : `0 8px 0 ${lvl.shadow_color}`,
+                          boxShadow: isLocked ? '0 8px 0 #a0a8b5' : isDone ? '0 8px 0 #007a3d' : `0 8px 0 ${lvl.shadow_color}`,
                           cursor: isLocked ? 'default' : 'pointer',
-                          transition: 'transform 0.15s'
+                          transition: 'transform 0.15s',
+                          outline: isDone ? '3px solid #00D166' : 'none',
+                          outlineOffset: 3
                         }}
                         onMouseEnter={e => !isLocked && (e.currentTarget.style.transform = 'scale(1.08)')}
                         onMouseLeave={e => !isLocked && (e.currentTarget.style.transform = 'scale(1)')}
                       >
-                        {isLocked ? <Lock size={24} color="#6b7280" /> : <span style={{fontSize: 24}}>{less.emoji}</span>}
+                        {isLocked
+                          ? <Lock size={24} color="#6b7280" />
+                          : isDone
+                            ? <CheckCircle size={28} color="white" />
+                            : <span style={{fontSize: 24}}>{less.emoji}</span>
+                        }
                       </div>
                       
                       {/* Label */}
@@ -184,6 +207,9 @@ export default function Dashboard() {
                         <div style={{ fontWeight: 800, fontSize: 13, color: isLocked ? '#9ca3af' : '#111827', lineHeight: 1.2 }}>
                           {less.title}
                         </div>
+                        {isDone && (
+                          <div style={{ fontSize: 11, color: '#00a652', fontWeight: 700, marginTop: 3 }}>✓ Selesai</div>
+                        )}
                       </div>
                     </div>
                   )

@@ -5,7 +5,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import DashboardLayout from './components/DashboardLayout'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import LessonPage from './pages/LessonPage'
+import Rewards from './pages/Rewards'
+import Profile from './pages/Profile'
 import CharakterQuiz from './components/CharakterQuiz/CharakterQuiz'
 import './index.css'
 
@@ -21,7 +24,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/quiz" element={<CharakterQuiz onComplete={(res) => {
           console.log("Quiz Selesai! Karakter:", res);
           // Simpan status bahwa user sudah pernah ikut kuis
@@ -31,14 +34,18 @@ function App() {
         }} />} />
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+        <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
+        <Route path="/profile" element={<DashboardLayout><Profile /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
         <Route 
-          path="/simulator" 
+          path="/sandbox" 
           element={
-            <MarketSim 
-              balance={balance} 
-              onTransaction={handleTransaction} 
-            />
+            <DashboardLayout>
+              <MarketSim 
+                balance={balance} 
+                onTransaction={handleTransaction} 
+              />
+            </DashboardLayout>
           } 
         />
         {/* Redirect unknown routes for now */}
