@@ -230,7 +230,7 @@ export default function LessonPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/lesson/${nextId}?skipToQuiz=true`)} style={{
+          <button onClick={() => navigate(`/lesson/${nextId}`)} style={{
             marginTop: 12, padding: '18px 40px', borderRadius: 16, border: 'none',
             background: '#00D166', color: 'white', fontWeight: 900, fontSize: 18,
             cursor: 'pointer', boxShadow: '0 6px 0 #00a652',
