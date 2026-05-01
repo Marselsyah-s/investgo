@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import DashboardLayout from './components/DashboardLayout'
 import Login from './pages/Login'
 import LessonPage from './pages/LessonPage'
+import Rewards from './pages/Rewards'
 import './index.css'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/register" element={<Login />} />
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+        <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
         <Route 
           path="/simulator" 
