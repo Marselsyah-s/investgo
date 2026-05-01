@@ -6,14 +6,53 @@ import { supabase } from '../lib/supabase'
 export default function Topbar() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [coins, setCoins] = useState(0)
 
   useEffect(() => {
-    const getUser = async () => {
+    let statsChannel;
+
+    const getUserAndStats = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      if (user) {
+        setUser(user)
+        fetchUserStats(user.id)
+
+        // Real-time listener untuk koin
+        statsChannel = supabase
+          .channel('public:user_stats')
+          .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'user_stats',
+            filter: `user_id=eq.${user.id}`
+          }, (payload) => {
+            if (payload.new && payload.new.coins !== undefined) {
+              setCoins(payload.new.coins)
+            }
+          })
+          .subscribe()
+      }
     }
-    getUser()
+    getUserAndStats()
+
+    return () => {
+      if (statsChannel) {
+        supabase.removeChannel(statsChannel)
+      }
+    }
   }, [])
+
+  const fetchUserStats = async (userId) => {
+    const { data, error } = await supabase
+      .from('user_stats')
+      .select('coins')
+      .eq('user_id', userId)
+      .maybeSingle()
+    
+    if (data) {
+      setCoins(data.coins ?? 0)
+    }
+  }
 
   const getInitial = () => {
     const name = user?.user_metadata?.display_name || user?.email || '?'
@@ -56,7 +95,7 @@ export default function Topbar() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'white', fontSize: 12, fontWeight: 900
         }}>S</div>
-        2,450
+        {coins.toLocaleString('id-ID')}
       </div>
 
       {/* Hearts */}
