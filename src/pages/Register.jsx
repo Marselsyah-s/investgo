@@ -1,22 +1,31 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { TrendingUp, ArrowRight, AlertCircle } from 'lucide-react'
+import { TrendingUp, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
     setLoading(true)
     setErrorMsg('')
+    setSuccessMsg('')
     
+    if (password !== confirmPassword) {
+      setErrorMsg('Password dan Konfirmasi Password tidak sama.')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password
       })
@@ -24,10 +33,13 @@ export default function Login() {
       if (error) throw error
 
       if (data.user) {
-        navigate('/dashboard')
+        setSuccessMsg('Pendaftaran berhasil! Mengalihkan ke halaman login...')
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
       }
     } catch (error) {
-      setErrorMsg(error.message || 'Gagal masuk. Periksa kembali email dan password Anda.')
+      setErrorMsg(error.message || 'Gagal mendaftar. Pastikan email belum terdaftar dan password minimal 6 karakter.')
     } finally {
       setLoading(false)
     }
@@ -61,10 +73,10 @@ export default function Login() {
             </span>
           </div>
           <h1 style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.2, marginBottom: 20 }}>
-            Kembali Belajar & Berinvestasi
+            Mulai Perjalanan Investasi Anda
           </h1>
           <p style={{ fontSize: 18, opacity: 0.9, lineHeight: 1.6 }}>
-            Lanjutkan progres belajarmu, kerjakan tantangan harian, dan pantau terus posisi kamu di leaderboard!
+            Buat akun sekarang dan mulai belajar materi finansial gratis yang dirancang untuk pemula hingga mahir!
           </p>
         </div>
       </div>
@@ -81,8 +93,8 @@ export default function Login() {
       }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div style={{ marginBottom: 40, textAlign: 'center' }}>
-            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111827', marginBottom: 8 }}>Selamat Datang</h2>
-            <p style={{ color: '#6b7280' }}>Masuk untuk melanjutkan perjalananmu</p>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111827', marginBottom: 8 }}>Buat Akun Baru</h2>
+            <p style={{ color: '#6b7280' }}>Daftarkan email Anda untuk mulai belajar</p>
           </div>
 
           {errorMsg && (
@@ -92,7 +104,14 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {successMsg && (
+            <div style={{ background: '#f0fdf4', border: '1px solid #4ade80', color: '#166534', padding: '12px 16px', borderRadius: 12, marginBottom: 24, fontSize: 14, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
+              <span style={{ lineHeight: 1.5 }}>{successMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
               <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 8 }}>
                 Email
@@ -115,20 +134,38 @@ export default function Login() {
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <label style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>
-                  Password
-                </label>
-                <a href="#" style={{ fontSize: 13, color: '#00D166', fontWeight: 600, textDecoration: 'none' }}>
-                  Lupa Password?
-                </a>
-              </div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 8 }}>
+                Password (Min. 6 Karakter)
+              </label>
               <input 
                 type="password" 
                 placeholder="••••••••"
                 required
+                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: 12,
+                  border: '1.5px solid #e2e5ea', background: '#F0F2F5',
+                  fontSize: 15, color: '#1f2937', outline: 'none',
+                  transition: 'all 0.2s', fontFamily: 'inherit'
+                }}
+                onFocus={e => { e.target.style.borderColor = '#00D166'; e.target.style.background = 'white' }}
+                onBlur={e => { e.target.style.borderColor = '#e2e5ea'; e.target.style.background = '#F0F2F5' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 8 }}>
+                Konfirmasi Password
+              </label>
+              <input 
+                type="password" 
+                placeholder="••••••••"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{
                   width: '100%', padding: '14px 16px', borderRadius: 12,
                   border: '1.5px solid #e2e5ea', background: '#F0F2F5',
@@ -147,15 +184,15 @@ export default function Login() {
               style={{ width: '100%', padding: '16px', fontSize: 16, marginTop: 8 }}
             >
               {loading ? 'Memproses...' : (
-                <>Masuk ke Dashboard <ArrowRight size={18} /></>
+                <>Daftar Sekarang <ArrowRight size={18} /></>
               )}
             </button>
           </form>
 
           <div style={{ marginTop: 32, textAlign: 'center', fontSize: 14, color: '#6b7280' }}>
-            Belum punya akun?{' '}
-            <Link to="/register" style={{ color: '#00D166', fontWeight: 700, textDecoration: 'none' }}>
-              Daftar Gratis
+            Sudah punya akun?{' '}
+            <Link to="/login" style={{ color: '#00D166', fontWeight: 700, textDecoration: 'none' }}>
+              Masuk di sini
             </Link>
           </div>
           
