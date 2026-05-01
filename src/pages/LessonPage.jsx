@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Heart, X, Zap, Trophy } from 'lucide-react'
 import { useLesson } from '../hooks/useCurriculum'
 import { useProgress } from '../hooks/useProgress'
@@ -131,19 +131,33 @@ function MatchQuestion({ q, onAnswer }) {
 export default function LessonPage() {
   const { lessonId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { lesson, slides, questions, loading } = useLesson(lessonId)
   const { saveProgress } = useProgress()
 
-  const [phase, setPhase] = useState('guide')   // 'guide' | 'quiz' | 'finish'
+  // Jika URL mengandung ?skipToQuiz=true, langsung mulai dari fase kuis
+  const skipToQuiz = new URLSearchParams(location.search).get('skipToQuiz') === 'true'
+
+  const [phase, setPhase] = useState(skipToQuiz ? 'quiz' : 'guide')
   const [slideIdx, setSlideIdx] = useState(0)
   const [qIdx, setQIdx] = useState(0)
   const [hearts, setHearts] = useState(5)
   const [xp, setXp] = useState(0)
   const [feedback, setFeedback] = useState(null) // null | 'correct' | 'wrong'
   const [qKey, setQKey] = useState(0)
-  const [nextLessonId, setNextLessonId] = useState(null)
-  const [nextLessonTitle, setNextLessonTitle] = useState('')
   const savedRef = useRef(false) // Mencegah double-save
+
+  // Reset semua state ketika berpindah ke lesson baru
+  useEffect(() => {
+    savedRef.current = false
+    setPhase(skipToQuiz ? 'quiz' : 'guide')
+    setSlideIdx(0)
+    setQIdx(0)
+    setHearts(5)
+    setXp(0)
+    setFeedback(null)
+    setQKey(0)
+  }, [lessonId, skipToQuiz])
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -216,7 +230,7 @@ export default function LessonPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/lesson/${nextId}`)} style={{
+          <button onClick={() => navigate(`/lesson/${nextId}?skipToQuiz=true`)} style={{
             marginTop: 12, padding: '18px 40px', borderRadius: 16, border: 'none',
             background: '#00D166', color: 'white', fontWeight: 900, fontSize: 18,
             cursor: 'pointer', boxShadow: '0 6px 0 #00a652',
