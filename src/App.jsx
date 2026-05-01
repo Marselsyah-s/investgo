@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import MarketSim from './components/MarketSim/MarketSim'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import DashboardLayout from './components/DashboardLayout'
 import './index.css'
 
 function App() {
