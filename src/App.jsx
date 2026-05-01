@@ -36,6 +36,7 @@ function App() {
           // Arahkan ke halaman utama (dashboard)
           window.location.href = '/dashboard'; 
         }} />} />
+        
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
