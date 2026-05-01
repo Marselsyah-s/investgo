@@ -1,3 +1,4 @@
+.env
 # Logs
 logs
 *.log
@@ -23,4 +24,15 @@ dist-ssr
 *.sln
 *.sw?
 
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+.DS_Store
+Thumbs.db
 .env

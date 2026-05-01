@@ -52,7 +52,7 @@ export default function Navbar() {
             <TrendingUp size={20} color="white" strokeWidth={2.5} />
           </div>
           <span style={{ fontWeight: 800, fontSize: 20, color: '#1f2937', letterSpacing: '-0.5px' }}>
-            Investa<span style={{ color: '#00D166' }}>Go</span>
+            Invest<span style={{ color: '#00D166' }}>Go</span>
           </span>
         </Link>
 
