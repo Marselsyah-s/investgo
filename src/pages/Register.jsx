@@ -7,6 +7,7 @@ export default function Register() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
@@ -17,6 +18,12 @@ export default function Register() {
     setErrorMsg('')
     setSuccessMsg('')
     
+    if (password !== confirmPassword) {
+      setErrorMsg('Password dan Konfirmasi Password tidak sama.')
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -26,9 +33,10 @@ export default function Register() {
       if (error) throw error
 
       if (data.user) {
-        setSuccessMsg('Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan konfirmasi.')
-        // Jika Anda mematikan "Confirm Email" di Supabase, user otomatis login.
-        // navigate('/dashboard')
+        setSuccessMsg('Pendaftaran berhasil! Mengalihkan ke halaman login...')
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
       }
     } catch (error) {
       setErrorMsg(error.message || 'Gagal mendaftar. Pastikan email belum terdaftar dan password minimal 6 karakter.')
@@ -136,6 +144,28 @@ export default function Register() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: 12,
+                  border: '1.5px solid #e2e5ea', background: '#F0F2F5',
+                  fontSize: 15, color: '#1f2937', outline: 'none',
+                  transition: 'all 0.2s', fontFamily: 'inherit'
+                }}
+                onFocus={e => { e.target.style.borderColor = '#00D166'; e.target.style.background = 'white' }}
+                onBlur={e => { e.target.style.borderColor = '#e2e5ea'; e.target.style.background = '#F0F2F5' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 8 }}>
+                Konfirmasi Password
+              </label>
+              <input 
+                type="password" 
+                placeholder="••••••••"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{
                   width: '100%', padding: '14px 16px', borderRadius: 12,
                   border: '1.5px solid #e2e5ea', background: '#F0F2F5',
