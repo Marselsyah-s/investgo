@@ -1,6 +1,29 @@
-import { Bell, Flame, Heart, Coins } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Bell, Flame, Heart } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function Topbar() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+  }, [])
+
+  const getInitial = () => {
+    const name = user?.user_metadata?.display_name || user?.email || '?'
+    return name.charAt(0).toUpperCase()
+  }
+
+  const getDisplayName = () => {
+    return user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Pengguna'
+  }
+
   return (
     <div style={{
       height: 70,
@@ -30,7 +53,8 @@ export default function Topbar() {
       }}>
         <div style={{
           width: 20, height: 20, borderRadius: '50%', background: '#FFC107',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 900
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white', fontSize: 12, fontWeight: 900
         }}>S</div>
         2,450
       </div>
@@ -55,13 +79,31 @@ export default function Topbar() {
         <Bell size={20} />
       </button>
 
-      {/* User Avatar */}
-      <button style={{
-        width: 40, height: 40, borderRadius: '50%', background: '#1f2937',
-        border: '2px solid #00D166', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', padding: 0, overflow: 'hidden'
-      }}>
-        <img src="https://ui-avatars.com/api/?name=Anda&background=1f2937&color=fff" alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      {/* User Avatar — klik ke halaman profil */}
+      <button
+        onClick={() => navigate('/profile')}
+        title={`Lihat profil: ${getDisplayName()}`}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          background: 'white', border: '1.5px solid #e2e5ea',
+          borderRadius: 9999, padding: '6px 14px 6px 6px',
+          cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#00D166'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,209,102,0.2)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e5ea'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
+      >
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #00D166, #00a652)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white', fontWeight: 800, fontSize: 14, flexShrink: 0
+        }}>
+          {getInitial()}
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#374151', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {getDisplayName()}
+        </span>
       </button>
     </div>
   )

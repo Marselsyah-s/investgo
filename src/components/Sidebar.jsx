@@ -1,4 +1,4 @@
-import { Map, Gift, Bot, BarChart3, Users, Crown } from 'lucide-react'
+import { Map, Gift, Bot, BarChart3, Users, UserCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 export default function Sidebar() {
@@ -14,6 +14,7 @@ export default function Sidebar() {
 >>>>>>> 4843707375dd08229cb2f42f571706f7d944e0f7
     { icon: <BarChart3 size={22} />, label: 'Market Sandbox', path: '/sandbox' },
     { icon: <Users size={22} />, label: 'Mentorship & Funding', path: '/mentorship' },
+    { icon: <UserCircle size={22} />, label: 'Profil Saya', path: '/profile' },
   ]
 
   return (
