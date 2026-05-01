@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import DashboardLayout from './components/DashboardLayout'
 import Login from './pages/Login'
 import LessonPage from './pages/LessonPage'
+import CharakterQuiz from './components/CharakterQuiz/CharakterQuiz'
 import './index.css'
 
 function App() {
@@ -21,6 +22,13 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Login />} />
+        <Route path="/quiz" element={<CharakterQuiz onComplete={(res) => {
+          console.log("Quiz Selesai! Karakter:", res);
+          // Simpan status bahwa user sudah pernah ikut kuis
+          localStorage.setItem('hasTakenQuiz', 'true');
+          // Arahkan ke halaman utama (dashboard)
+          window.location.href = '/dashboard'; 
+        }} />} />
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />

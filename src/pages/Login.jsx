@@ -12,7 +12,16 @@ export default function Login() {
     // Simulate API call
     setTimeout(() => {
       setLoading(false)
-      navigate('/dashboard')
+      // Cek apakah user sudah pernah mengisi kuis (menggunakan local storage sementara)
+      const hasTakenQuiz = localStorage.getItem('hasTakenQuiz')
+      
+      if (!hasTakenQuiz) {
+        // Jika belum, arahkan ke rute kuis
+        navigate('/quiz')
+      } else {
+        // Jika sudah, arahkan ke dashboard
+        navigate('/quiz')
+      }
     }, 1000)
   }
 
@@ -74,7 +83,7 @@ export default function Login() {
                 Email
               </label>
               <input 
-                type="email" 
+                type="email " 
                 placeholder="nama@email.com"
                 required
                 style={{
