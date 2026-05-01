@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import LessonPage from './pages/LessonPage'
 import Rewards from './pages/Rewards'
+import CharakterQuiz from './components/CharakterQuiz/CharakterQuiz'
 import './index.css'
 
 function App() {
@@ -23,6 +24,13 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/quiz" element={<CharakterQuiz onComplete={(res) => {
+          console.log("Quiz Selesai! Karakter:", res);
+          // Simpan status bahwa user sudah pernah ikut kuis
+          localStorage.setItem('hasTakenQuiz', 'true');
+          // Arahkan ke halaman utama (dashboard)
+          window.location.href = '/dashboard'; 
+        }} />} />
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
