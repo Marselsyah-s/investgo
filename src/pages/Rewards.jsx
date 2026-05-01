@@ -161,7 +161,6 @@ export default function Rewards() {
       console.error('API Error:', error)
       alert('Server backend (Express) sedang offline. Pastikan npm run dev dijalankan di folder server.')
     }
-    }
   }
 
   const getTierInfo = (xp) => {
