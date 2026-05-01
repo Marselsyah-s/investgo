@@ -33,14 +33,17 @@ export default function Login() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 
         .login-page {
-          min-height: 100vh;
+          position: fixed;
+          inset: 0;
           display: flex;
           font-family: 'Inter', 'Segoe UI', sans-serif;
+          overflow: hidden;
         }
 
         /* ── Left Panel ─── */
         .login-left {
           flex: 0 0 45%;
+          height: 100%;
           background: linear-gradient(160deg, #00D166 0%, #00a050 60%, #007a3d 100%);
           display: flex;
           flex-direction: column;
@@ -52,11 +55,13 @@ export default function Login() {
         /* ── Right Panel ─── */
         .login-right {
           flex: 1;
+          height: 100%;
           background: white;
           display: flex;
           flex-direction: column;
           justify-content: center;
           padding: 48px 44px;
+          overflow-y: auto;
         }
 
         /* ── Form elements ─── */
@@ -80,8 +85,8 @@ export default function Login() {
         .login-icon-wrap svg:first-child { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
         /* ── Dragon image ─── */
-        .login-dragon-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 0 24px; }
-        .login-dragon-img { width: 90%; border-radius: 16px; object-fit: cover; display: block; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+        .login-dragon-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 0 24px; min-height: 0; }
+        .login-dragon-img { width: 90%; max-height: 100%; border-radius: 16px; object-fit: cover; display: block; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
 
         /* ── Mobile Banner ─── */
         .login-mobile-banner { display: none; }
@@ -95,7 +100,7 @@ export default function Login() {
 
         /* ─── MOBILE (≤ 640px) ─── */
         @media (max-width: 640px) {
-          .login-page { flex-direction: column; }
+          .login-page { position: fixed; inset: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
           .login-left { display: none; }
           .login-mobile-banner {
             display: flex;
@@ -103,12 +108,13 @@ export default function Login() {
             gap: 16px;
             background: linear-gradient(135deg, #00D166, #007a3d);
             padding: 24px 20px;
+            flex-shrink: 0;
           }
           .login-mobile-banner img {
             width: 72px; height: 72px; border-radius: 14px; object-fit: cover;
             box-shadow: 0 4px 16px rgba(0,0,0,0.2);
           }
-          .login-right { padding: 28px 20px; }
+          .login-right { height: auto; flex: 1; padding: 28px 20px; overflow-y: visible; }
         }
       `}</style>
 
@@ -152,7 +158,7 @@ export default function Login() {
 
           {/* Subtitle */}
           <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.85)', lineHeight: 1.65, marginBottom: 24, maxWidth: 220 }}>
-            Transform your financial journey from small beginnings to legendary success in a playground of learning.
+            Mulailah perjalanan investasimu, dari cacing kecil hingga menjadi naga yang tangguh di dunia finansial.
           </p>
 
           {/* Dragon Image */}

@@ -52,14 +52,17 @@ export default function Register() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 
         .reg-page {
-          min-height: 100vh;
+          position: fixed;
+          inset: 0;
           display: flex;
           font-family: 'Inter', 'Segoe UI', sans-serif;
+          overflow: hidden;
         }
 
         /* ── Left Panel ─── */
         .reg-left {
           flex: 0 0 45%;
+          height: 100%;
           background: linear-gradient(160deg, #00D166 0%, #00a050 60%, #007a3d 100%);
           display: flex;
           flex-direction: column;
@@ -71,11 +74,13 @@ export default function Register() {
         /* ── Right Panel ─── */
         .reg-right {
           flex: 1;
+          height: 100%;
           background: white;
           display: flex;
           flex-direction: column;
           justify-content: center;
           padding: 40px 44px;
+          overflow-y: auto;
         }
 
         /* ── Form elements ─── */
@@ -99,8 +104,8 @@ export default function Register() {
         .reg-icon-wrap svg:first-child { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
         /* ── Dragon image ─── */
-        .reg-dragon-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 0 24px; }
-        .reg-dragon-img { width: 90%; border-radius: 16px; object-fit: cover; display: block; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+        .reg-dragon-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 0 24px; min-height: 0; }
+        .reg-dragon-img { width: 90%; max-height: 100%; border-radius: 16px; object-fit: cover; display: block; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
 
         /* ── Mobile Banner ─── */
         .reg-mobile-banner { display: none; }
@@ -114,7 +119,7 @@ export default function Register() {
 
         /* ─── MOBILE (≤ 640px) ─── */
         @media (max-width: 640px) {
-          .reg-page { flex-direction: column; }
+          .reg-page { position: fixed; inset: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
           .reg-left { display: none; }
           .reg-mobile-banner {
             display: flex;
@@ -122,12 +127,13 @@ export default function Register() {
             gap: 16px;
             background: linear-gradient(135deg, #00D166, #007a3d);
             padding: 24px 20px;
+            flex-shrink: 0;
           }
           .reg-mobile-banner img {
             width: 72px; height: 72px; border-radius: 14px; object-fit: cover;
             box-shadow: 0 4px 16px rgba(0,0,0,0.2);
           }
-          .reg-right { padding: 28px 20px; }
+          .reg-right { height: auto; flex: 1; padding: 28px 20px; overflow-y: visible; }
         }
       `}</style>
 
