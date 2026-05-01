@@ -25,12 +25,14 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
         <Route 
-          path="/simulator" 
+          path="/sandbox" 
           element={
-            <MarketSim 
-              balance={balance} 
-              onTransaction={handleTransaction} 
-            />
+            <DashboardLayout>
+              <MarketSim 
+                balance={balance} 
+                onTransaction={handleTransaction} 
+              />
+            </DashboardLayout>
           } 
         />
         {/* Redirect unknown routes for now */}
