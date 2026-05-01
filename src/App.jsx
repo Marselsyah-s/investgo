@@ -29,6 +29,23 @@ function App() {
       </Routes>
     </BrowserRouter>
   )
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route 
+          path="/simulator" 
+          element={
+            <MarketSim 
+              balance={balance} 
+              onTransaction={handleTransaction} 
+            />
+          } 
+        />
+      </Routes>
+    </BrowserRouter>
+  )
+}
 }
 
 export default App
