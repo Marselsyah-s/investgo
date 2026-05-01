@@ -53,12 +53,6 @@ const steps = [
   { num: '03', color: '#FFC107', title: 'Praktik & Menangkan', desc: 'Terapkan ilmu di simulator dan bersaing di leaderboard.' },
 ]
 
-const testimonials = [
-  { name: 'Rafi Andika', role: 'Mahasiswa Ekonomi', rating: 5, avatar: 'RA', color: '#00D166', text: 'InvestaGo bikin belajar investasi jadi seru banget! Dalam 2 minggu saya sudah paham cara baca candlestick chart.' },
-  { name: 'Siti Nurhaliza', role: 'Fresh Graduate', rating: 5, avatar: 'SN', color: '#7C4DFF', text: 'Fitur virtual trading-nya luar biasa. Saya bisa latihan tanpa takut rugi. Sekarang sudah mulai investasi sungguhan!' },
-  { name: 'Budi Santoso', role: 'Karyawan Swasta', rating: 5, avatar: 'BS', color: '#FFC107', text: 'Modulnya rapi dan mudah dipahami. Sistem XP-nya bikin saya semangat terus belajar setiap hari.' },
-  { name: 'Dewi Rahayu', role: 'Ibu Rumah Tangga', rating: 5, avatar: 'DR', color: '#00D166', text: 'Awalnya takut investasi, tapi InvestaGo menjelaskan dengan sangat sederhana. Highly recommended!' },
-]
 
 const stats = [
   { value: '50K+', label: 'Pengguna Aktif', icon: <Users size={20} />, color: '#00D166' },
@@ -94,9 +88,9 @@ function HeroSection() {
               Kuasai saham, reksa dana, dan kripto lewat modul interaktif, virtual trading simulator, dan sistem reward gamified — gratis selamanya.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <a href="/register" className="btn-primary" style={{ fontSize: 15, padding: '13px 28px' }}>
+              <Link to="/register" className="btn-primary" style={{ fontSize: 15, padding: '13px 28px' }}>
                 Mulai Belajar Gratis <ArrowRight size={16} />
-              </a>
+              </Link>
               <a href="#how-it-works" className="btn-outlined" style={{ fontSize: 15, padding: '13px 28px' }}>
                 Lihat Cara Kerja
               </a>
@@ -278,60 +272,6 @@ function HowItWorksSection() {
   )
 }
 
-function TestimonialsSection() {
-  const [ref, visible] = useInView()
-  const [idx, setIdx] = useState(0)
-  const prev = () => setIdx(i => (i - 1 + testimonials.length) % testimonials.length)
-  const next = () => setIdx(i => (i + 1) % testimonials.length)
-  const visible2 = [idx, (idx + 1) % testimonials.length, (idx + 2) % testimonials.length]
-
-  return (
-    <section id="testimonials" ref={ref} style={{ background: 'white', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span className="chip-neutral" style={{ marginBottom: 16, display: 'inline-flex' }}>💬 Testimoni</span>
-          <h2 style={{ fontSize: 'clamp(28px,4vw,42px)', fontWeight: 800, color: '#111827', letterSpacing: '-1px' }}>
-            Dipercaya Ribuan Investor Muda
-          </h2>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-          {visible2.map((ti, i) => {
-            const t = testimonials[ti]
-            return (
-              <div key={ti} className="card" style={{ padding: 28, opacity: visible ? 1 : 0, animationDelay: `${i * 0.1}s` }}>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-                  {[...Array(t.rating)].map((_, j) => <Star key={j} size={15} fill="#FFC107" color="#FFC107" />)}
-                </div>
-                <p style={{ color: '#374151', fontSize: 14, lineHeight: 1.75, marginBottom: 20, fontStyle: 'italic' }}>"{t.text}"</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 9999, background: t.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 13 }}>
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 32 }}>
-          <button onClick={prev} style={{ width: 40, height: 40, borderRadius: 9999, border: '1.5px solid #c8cdd6', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-            <ChevronLeft size={18} />
-          </button>
-          {testimonials.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)} style={{ width: 8, height: 8, borderRadius: 9999, background: i === idx ? '#00D166' : '#c8cdd6', border: 'none', cursor: 'pointer', transition: 'all 0.2s', padding: 0 }} />
-          ))}
-          <button onClick={next} style={{ width: 40, height: 40, borderRadius: 9999, border: '1.5px solid #c8cdd6', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
-      <style>{`@media(max-width:768px){section > div > div:first-of-type{grid-template-columns:1fr !important;}}`}</style>
-    </section>
-  )
-}
 
 function CTASection() {
   const [ref, visible] = useInView()
@@ -354,9 +294,9 @@ function CTASection() {
             Bergabung dengan 50.000+ pelajar yang sudah menguasai dunia investasi bersama InvestaGo. Gratis selamanya!
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/register" className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }}>
+            <Link to="/register" className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }}>
               Daftar Sekarang — Gratis! <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
           <p style={{ fontSize: 13, color: '#a0a8b5', marginTop: 16 }}>Tidak perlu kartu kredit • Bisa mulai dalam 30 detik</p>
         </div>
@@ -414,7 +354,7 @@ export default function LandingPage() {
       <StatsBar />
       <FeaturesSection />
       <HowItWorksSection />
-      <TestimonialsSection />
+
       <CTASection />
       <Footer />
     </div>
