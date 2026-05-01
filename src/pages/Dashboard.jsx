@@ -169,17 +169,17 @@ export default function Dashboard() {
                   const pos = nodePositions[currentIdx]
                   const localY = pos.cy - (startIdx * VERTICAL_GAP)
                   const isDone = completedLessons.has(less.id)
-                  
+
                   // Lesson pertama selalu terbuka. Lesson berikutnya terbuka jika lesson sebelumnya sudah selesai.
                   const prevLesson = allLessons[currentIdx - 1]
                   const isLocked = currentIdx > 0 && !completedLessons.has(prevLesson?.id)
-                  
+
                   return (
                     <div key={less.id} style={{ position: 'absolute', left: pos.cx - pos.r, top: localY - pos.r, width: pos.r * 2, height: pos.r * 2 }}>
                       <div
                         onClick={() => !isLocked && navigate(`/lesson/${less.id}`)}
                         style={{
-                          width: '100%', height: '100%', borderRadius: '50%', 
+                          width: '100%', height: '100%', borderRadius: '50%',
                           background: isLocked ? '#c8cdd6' : isDone ? '#00a652' : lvl.color,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           boxShadow: isLocked ? '0 8px 0 #a0a8b5' : isDone ? '0 8px 0 #007a3d' : `0 8px 0 ${lvl.shadow_color}`,
@@ -195,7 +195,7 @@ export default function Dashboard() {
                           ? <Lock size={24} color="#6b7280" />
                           : isDone
                             ? <CheckCircle size={28} color="white" />
-                            : <span style={{fontSize: 24}}>{less.emoji}</span>
+                            : <span style={{ fontSize: 24 }}>{less.emoji}</span>
                         }
                       </div>
 

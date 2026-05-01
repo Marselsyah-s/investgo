@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([
@@ -159,7 +160,24 @@ const Chatbot = () => {
                                 }`}>
 
                                 {/* Teks Pesan */}
-                                {msg.text && <div>{msg.text}</div>}
+                                {/* Teks Pesan */}
+                                {msg.text && (
+                                    <div className="text-[14px] leading-relaxed break-words">
+                                        <ReactMarkdown
+                                            components={{
+                                                // Custom styling agar Tailwind tidak menghilangkan format bawaan browser
+                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc ml-5 mb-2" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal ml-5 mb-2" {...props} />,
+                                                li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="font-bold text-emerald-950" {...props} />,
+                                                em: ({ node, ...props }) => <em className="italic" {...props} />,
+                                            }}
+                                        >
+                                            {msg.text}
+                                        </ReactMarkdown>
+                                    </div>
+                                )}
 
                                 {/* Gambar Pesan (Muncul di bubble chat) */}
                                 {msg.image && (
@@ -218,7 +236,7 @@ const Chatbot = () => {
                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                         />
                         <button onClick={sendMessage} className="w-10 h-10 bg-emerald-800 rounded-full flex items-center justify-center text-white shadow-md hover:bg-emerald-900 transition-transform hover:scale-105">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 translate-x-[-1px]" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rotate-90 ml-1" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                             </svg>
                         </button>
