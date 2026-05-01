@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Heart, X, Zap, Trophy } from 'lucide-react'
 import { useLesson } from '../hooks/useCurriculum'
+import { useUserStats } from '../hooks/useUserStats'
 import { useProgress } from '../hooks/useProgress'
+import { supabase } from '../lib/supabase'
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -134,6 +136,7 @@ export default function LessonPage() {
   const location = useLocation()
   const { lesson, slides, questions, loading } = useLesson(lessonId)
   const { saveProgress } = useProgress()
+  const { hearts: globalHearts, deductHeart } = useUserStats()
 
   // Jika URL mengandung ?skipToQuiz=true, langsung mulai dari fase kuis
   const skipToQuiz = new URLSearchParams(location.search).get('skipToQuiz') === 'true'
@@ -146,14 +149,33 @@ export default function LessonPage() {
   const [feedback, setFeedback] = useState(null) // null | 'correct' | 'wrong'
   const [qKey, setQKey] = useState(0)
   const savedRef = useRef(false) // Mencegah double-save
+  const [shouldShake, setShouldShake] = useState(false)
+  const prevHeartsRef = useRef(hearts)
 
-  // Reset semua state ketika berpindah ke lesson baru
+  // Sinkronkan nyawa lokal dengan database saat ada perubahan global
+  useEffect(() => {
+    if (globalHearts !== undefined) {
+      setHearts(globalHearts)
+    }
+  }, [globalHearts])
+
+  useEffect(() => {
+    if (hearts < prevHeartsRef.current) {
+      setShouldShake(true)
+      setTimeout(() => setShouldShake(false), 500)
+    }
+    prevHeartsRef.current = hearts
+  }, [hearts])
+
+  // Sinkronisasi Hearts Real-time kini ditangani oleh hook useUserStats
+  // Kita tetap simpan hearts lokal untuk transisi UI yang mulus saat menjawab salah
+
+  // Reset progress state saat ganti lesson (tapi TIDAK reset hearts)
   useEffect(() => {
     savedRef.current = false
     setPhase(skipToQuiz ? 'quiz' : 'guide')
     setSlideIdx(0)
     setQIdx(0)
-    setHearts(5)
     setXp(0)
     setFeedback(null)
     setQKey(0)
@@ -184,13 +206,30 @@ export default function LessonPage() {
     else setPhase('quiz')
   }
 
-  function handleAnswer(correct) {
+  async function handleAnswer(correct) {
     if (correct) {
       setXp(x => x + (questions[qIdx].xp || 20))
       setFeedback('correct')
     } else {
-      setHearts(h => Math.max(0, h - 1))
       setFeedback('wrong')
+      const newHearts = Math.max(0, hearts - 1)
+      setHearts(newHearts)
+      
+      // Sinkronisasi ke Supabase via Backend (Secure)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        try {
+          fetch('http://localhost:5000/api/deduct-heart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          })
+        } catch (err) {
+          console.error('Gagal sinkronisasi nyawa:', err)
+        }
+      }
     }
   }
 
@@ -210,6 +249,35 @@ export default function LessonPage() {
 
   const q = questions[qIdx]
   const isCorrect = feedback === 'correct'
+
+  // ── OUT OF HEARTS SCREEN ────────────────────────────────────────────────
+  if (hearts <= 0) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, padding: 40 }}>
+        <div style={{ fontSize: 100 }}>💔</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, color: '#ef4444', margin: 0 }}>Nyawa Habis!</h1>
+        <p style={{ fontSize: 18, color: '#6b7280', textAlign: 'center', maxWidth: 400 }}>
+          Yah, kamu sudah kehabisan nyawa. Tunggu beberapa saat atau beli nyawa di toko hadiah untuk lanjut belajar!
+        </p>
+        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+          <button onClick={() => navigate('/rewards')} style={{
+            padding: '18px 40px', borderRadius: 16, border: 'none',
+            background: '#FFC107', color: 'white', fontWeight: 900, fontSize: 18,
+            cursor: 'pointer', boxShadow: '0 6px 0 #ff9800'
+          }}>
+            🛒 KE TOKO HADIAH
+          </button>
+          <button onClick={() => navigate('/dashboard')} style={{
+            padding: '18px 40px', borderRadius: 16,
+            border: '2px solid #e2e5ea', background: 'white',
+            color: '#6b7280', fontWeight: 700, fontSize: 16, cursor: 'pointer'
+          }}>
+            KEMBALI KE PETA
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // ── FINISH SCREEN ────────────────────────────────────────────────────────
   if (phase === 'finish') {
@@ -275,7 +343,11 @@ export default function LessonPage() {
 
         {/* Hearts & XP */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 18, color: '#ef4444' }}>
+          <div style={{ 
+            display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 18, color: '#ef4444',
+            animation: shouldShake ? 'shake 0.5s ease-in-out' : 'none',
+            transition: 'transform 0.2s'
+          }}>
             <Heart size={22} fill="#ef4444" color="#ef4444" />
             {hearts}
           </div>

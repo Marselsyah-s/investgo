@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 // Nilai fallback
 const FALLBACK_USER = {
   name: 'Investor Pemula',
-  coins: 450
+  coins: 0
 }
 
 // Store Items tetap dummy karena belum ada tabel transaksi koin
@@ -24,6 +24,7 @@ export default function Rewards() {
   const [coins, setCoins] = useState(FALLBACK_USER.coins)
   const [claimedQuests, setClaimedQuests] = useState([])
   const [showNoCoinsModal, setShowNoCoinsModal] = useState(false)
+  const [inventory, setInventory] = useState([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({data}) => {
@@ -38,13 +39,18 @@ export default function Rewards() {
   const fetchUserStats = async (userId) => {
     const { data, error } = await supabase
       .from('user_stats')
-      .select('coins, claimed_quests')
+      .select('coins, claimed_quests, inventory')
       .eq('user_id', userId)
       .maybeSingle()
     
     if (data) {
       setCoins(data.coins ?? 0)
       setClaimedQuests(data.claimed_quests || [])
+      setInventory(data.inventory || [])
+    } else {
+      setCoins(0)
+      setClaimedQuests([])
+      setInventory([])
     }
   }
 
@@ -72,63 +78,89 @@ export default function Rewards() {
   // Generate misi berdasarkan progress asli
   useEffect(() => {
     if (!progressLoading && user) {
+      const safeClaimed = claimedQuests.map(String)
       setQuests([
-        { id: 1, title: 'Selesaikan 2 Materi', reward: 50, progress: Math.min(completedLessons.size, 2), total: 2, claimed: claimedQuests.includes(1) },
-        { id: 2, title: 'Selesaikan 5 Materi', reward: 150, progress: Math.min(completedLessons.size, 5), total: 5, claimed: claimedQuests.includes(2) },
-        { id: 3, title: 'Kumpulkan 1000 XP', reward: 200, progress: Math.min(totalXp, 1000), total: 1000, claimed: claimedQuests.includes(3) },
+        { id: 1, title: 'Selesaikan 2 Materi', reward: 50, progress: Math.min(completedLessons.size, 2), total: 2, claimed: safeClaimed.includes(String(1)) },
+        { id: 2, title: 'Selesaikan 5 Materi', reward: 150, progress: Math.min(completedLessons.size, 5), total: 5, claimed: safeClaimed.includes(String(2)) },
+        { id: 3, title: 'Kumpulkan 1000 XP', reward: 200, progress: Math.min(totalXp, 1000), total: 1000, claimed: safeClaimed.includes(String(3)) }
       ])
     }
   }, [completedLessons.size, totalXp, progressLoading, user, claimedQuests])
 
   const handleClaim = async (q) => {
     if (q.progress >= q.total && !q.claimed && user) {
-      const newCoins = coins + q.reward
-      const newClaimedQuests = [...claimedQuests, q.id]
-      
-      // Update UI langsung
-      setCoins(newCoins)
-      setClaimedQuests(newClaimedQuests)
+      try {
+        // Ambil token sesi saat ini dari Supabase
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
 
-      // Simpan ke Supabase
-      const { error } = await supabase
-        .from('user_stats')
-        .upsert({ 
-          user_id: user.id, 
-          coins: newCoins, 
-          claimed_quests: newClaimedQuests 
-        }, { onConflict: 'user_id' })
+        // Panggil API Backend (Express) untuk memvalidasi dan menambahkan koin
+        const response = await fetch('http://localhost:5000/api/claim-quest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            questId: q.id,
+            rewardCoins: q.reward
+          })
+        })
 
-      if (error) {
-        console.error('Gagal menyimpan klaim misi:', error)
+        const result = await response.json()
+
+        if (response.ok) {
+          // Hanya update UI (Koin bertambah & tombol berubah jadi Diklaim) JIKA backend menyetujui
+          setCoins(result.coins)
+          setClaimedQuests(result.claimed_quests)
+        } else {
+          // Jika gagal (misal user mencoba nge-hack dengan ngeklik 2x pakai script)
+          alert(`Gagal klaim: ${result.error}`)
+        }
+      } catch (error) {
+        console.error('API Error:', error)
+        alert('Server backend (Express) sedang offline. Pastikan npm run dev dijalankan di folder server.')
       }
     }
   }
 
-  const handleBuy = async (price) => {
-    if (coins >= price && user) {
-      const newCoins = coins - price
-      
-      // Update UI langsung
-      setCoins(newCoins)
-
-      // Simpan ke Supabase
-      const { error } = await supabase
-        .from('user_stats')
-        .upsert({ 
-          user_id: user.id, 
-          coins: newCoins,
-          claimed_quests: claimedQuests // Sertakan agar tidak keriset jika row baru dibuat
-        }, { onConflict: 'user_id' })
-
-      if (error) {
-        console.error('Gagal memproses pembelian:', error)
-      } else {
-        alert('Pembelian berhasil! Item telah ditambahkan ke akun Anda.')
-      }
-    } else if (!user) {
-      alert('Silakan login terlebih dahulu.')
-    } else {
+  const handleBuy = async (item) => {
+    if (!user) return alert('Silakan login terlebih dahulu.')
+    if (coins < item.price) {
       setShowNoCoinsModal(true)
+      return
+    }
+    if (inventory.includes(String(item.id))) return alert('Item sudah kamu miliki!')
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+
+      const response = await fetch('http://localhost:5000/api/buy-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          itemId: item.id,
+          price: item.price
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setCoins(result.coins)
+        setInventory(result.inventory)
+        alert('Pembelian berhasil! Item telah ditambahkan ke akun Anda.')
+      } else {
+        alert(`Gagal membeli: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('API Error:', error)
+      alert('Server backend (Express) sedang offline. Pastikan npm run dev dijalankan di folder server.')
+    }
     }
   }
 
@@ -180,16 +212,21 @@ export default function Rewards() {
           {/* Avatar / Tier Badge */}
           <div style={{ 
             width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg, #e5e7eb, #9ca3af)',
-            border: '4px solid #4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+            border: inventory.includes('2') ? '4px solid #3b82f6' : '4px solid #4b5563', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: inventory.includes('2') ? '0 0 20px rgba(59, 130, 246, 0.6)' : '0 8px 16px rgba(0,0,0,0.2)'
           }}>
-            <Shield size={48} color="#4b5563" />
+            {inventory.includes('2') ? <Crown size={48} color="white" /> : <Shield size={48} color="#4b5563" />}
           </div>
 
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 2 }}>{userName}</div>
+                <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {userName}
+                  {inventory.includes('3') && <span style={{ background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 800 }}>Double XP Aktif</span>}
+                  {inventory.includes('1') && <span style={{ background: '#f97316', color: 'white', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 800 }}>Streak Freeze Aktif</span>}
+                </div>
                 <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>{currentTier.name}</h2>
                 <p style={{ color: '#9ca3af', fontSize: 15, fontWeight: 500 }}>
                   {totalXp} XP {totalXp < currentTier.nextTierXp ? `/ ${currentTier.nextTierXp} XP menuju Rank Selanjutnya` : '(MAX LEVEL)'}
@@ -197,8 +234,12 @@ export default function Rewards() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: 999 }}>
-                  <Star size={18} fill="#fbbf24" color="#fbbf24" />
-                  <span style={{ fontWeight: 800, fontSize: 18, color: '#fbbf24' }}>{coins} Koin</span>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', background: '#FFC107',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontSize: 13, fontWeight: 900
+                  }}>C</div>
+                  <span style={{ fontWeight: 800, fontSize: 18, color: '#FFC107' }}>{coins.toLocaleString('id-ID')} Koin</span>
                 </div>
               </div>
             </div>
@@ -264,11 +305,11 @@ export default function Rewards() {
                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
-                          Klaim {q.reward} <Star size={12} fill="white" style={{display:'inline', position:'relative', top:1}} />
+                          Klaim {q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: 'white', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#00D166', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </button>
                       ) : (
                         <div style={{ padding: '8px 16px', border: '2px solid #e5e7eb', color: '#9ca3af', borderRadius: 12, fontWeight: 700, fontSize: 14 }}>
-                          +{q.reward} Koin
+                          +{q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#e5e7eb', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </div>
                       )}
                     </div>
@@ -335,16 +376,22 @@ export default function Rewards() {
                     <h4 style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{item.name}</h4>
                     <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{item.desc}</p>
                   </div>
-                  <button onClick={() => handleBuy(item.price)} style={{
-                    padding: '8px 16px', background: 'transparent', border: '2px solid #e5e7eb',
-                    borderRadius: 12, color: '#111827', fontWeight: 800, fontSize: 14, cursor: 'pointer',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#fbbf24'; e.currentTarget.style.color = '#d97706' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#111827' }}
-                  >
-                    {item.price} <Star size={12} fill="currentColor" style={{display:'inline', position:'relative', top:1}} />
-                  </button>
+                  {inventory.includes(String(item.id)) ? (
+                    <div style={{ padding: '8px 16px', background: '#f3f4f6', color: '#9ca3af', borderRadius: 12, fontWeight: 700, fontSize: 14 }}>
+                      Dimiliki
+                    </div>
+                  ) : (
+                    <button onClick={() => handleBuy(item)} style={{
+                      padding: '8px 16px', background: 'transparent', border: '2px solid #e5e7eb',
+                      borderRadius: 12, color: '#111827', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#fbbf24'; e.currentTarget.style.color = '#d97706' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#111827' }}
+                    >
+                      {item.price} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#FFC107', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
