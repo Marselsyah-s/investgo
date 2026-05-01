@@ -1,29 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Trophy, Star, Target, Zap, Shield, Crown, Flame, ChevronRight, Lock } from 'lucide-react'
+import { useProgress } from '../hooks/useProgress'
+import { supabase } from '../lib/supabase'
 
-// Dummy Data
-const USER_DATA = {
+// Nilai fallback
+const FALLBACK_USER = {
   name: 'Investor Pemula',
-  xp: 2450,
-  nextTierXp: 3000,
-  tier: 'Silver Steer',
-  streak: 12,
   coins: 450
 }
 
-const DAILY_QUESTS = [
-  { id: 1, title: 'Selesaikan 2 Materi', reward: 50, progress: 1, total: 2, claimed: false },
-  { id: 2, title: 'Jawab 5 Pertanyaan Benar', reward: 100, progress: 5, total: 5, claimed: false },
-  { id: 3, title: 'Login selama 3 hari berturut-turut', reward: 150, progress: 3, total: 3, claimed: true },
-]
-
-const LEADERBOARD = [
-  { rank: 1, name: 'Budi Hartono', xp: 12500, tier: 'Gold Bull' },
-  { rank: 2, name: 'Siskaeee Invest', xp: 11200, tier: 'Gold Bull' },
-  { rank: 3, name: 'Crypto King', xp: 9800, tier: 'Silver Steer' },
-  { rank: 14, name: 'Investor Pemula', xp: 2450, tier: 'Silver Steer', isMe: true },
-]
-
+// Store Items tetap dummy karena belum ada tabel transaksi koin
 const STORE_ITEMS = [
   { id: 1, name: 'Streak Freeze', desc: 'Lindungi streak kamu jika absen 1 hari.', price: 200, icon: <Flame size={24} color="#ff9800" /> },
   { id: 2, name: 'Avatar Frame: Diamond', desc: 'Bingkai profil eksklusif.', price: 1000, icon: <Crown size={24} color="#3b82f6" /> },
@@ -31,26 +17,150 @@ const STORE_ITEMS = [
 ]
 
 export default function Rewards() {
-  const [quests, setQuests] = useState(DAILY_QUESTS)
-  const [coins, setCoins] = useState(USER_DATA.coins)
+  const { totalXp, completedLessons, loading: progressLoading } = useProgress()
+  const [user, setUser] = useState(null)
+  const [leaderboard, setLeaderboard] = useState([])
+  const [quests, setQuests] = useState([])
+  const [coins, setCoins] = useState(FALLBACK_USER.coins)
+  const [claimedQuests, setClaimedQuests] = useState([])
 
-  const handleClaim = (q) => {
-    if (q.progress >= q.total && !q.claimed) {
-      setQuests(quests.map(quest => quest.id === q.id ? { ...quest, claimed: true } : quest))
-      setCoins(prev => prev + q.reward)
+  useEffect(() => {
+    supabase.auth.getUser().then(({data}) => {
+      if (data?.user) {
+        setUser(data.user)
+        fetchUserStats(data.user.id)
+      }
+    })
+    fetchGlobalLeaderboard()
+  }, [])
+
+  const fetchUserStats = async (userId) => {
+    const { data, error } = await supabase
+      .from('user_stats')
+      .select('coins, claimed_quests')
+      .eq('user_id', userId)
+      .maybeSingle()
+    
+    if (data) {
+      setCoins(data.coins ?? 0)
+      setClaimedQuests(data.claimed_quests || [])
     }
   }
 
-  const handleBuy = (price) => {
-    if (coins >= price) {
-      setCoins(prev => prev - price)
-      alert('Pembelian berhasil! Item telah ditambahkan ke akun Anda.')
+  const fetchGlobalLeaderboard = async () => {
+    const { data, error } = await supabase.from('user_progress').select('user_id, xp_earned')
+    if (!error && data) {
+      // Group by user_id
+      const xpByUser = data.reduce((acc, row) => {
+        acc[row.user_id] = (acc[row.user_id] || 0) + row.xp_earned
+        return acc
+      }, {})
+
+      const leaderboardData = Object.keys(xpByUser).map(userId => {
+        const xp = xpByUser[userId]
+        return {
+          user_id: userId,
+          xp: xp,
+          tier: getTierInfo(xp).name,
+        }
+      })
+      setLeaderboard(leaderboardData)
+    }
+  }
+
+  // Generate misi berdasarkan progress asli
+  useEffect(() => {
+    if (!progressLoading && user) {
+      setQuests([
+        { id: 1, title: 'Selesaikan 2 Materi', reward: 50, progress: Math.min(completedLessons.size, 2), total: 2, claimed: claimedQuests.includes(1) },
+        { id: 2, title: 'Selesaikan 5 Materi', reward: 150, progress: Math.min(completedLessons.size, 5), total: 5, claimed: claimedQuests.includes(2) },
+        { id: 3, title: 'Kumpulkan 1000 XP', reward: 200, progress: Math.min(totalXp, 1000), total: 1000, claimed: claimedQuests.includes(3) },
+      ])
+    }
+  }, [completedLessons.size, totalXp, progressLoading, user, claimedQuests])
+
+  const handleClaim = async (q) => {
+    if (q.progress >= q.total && !q.claimed && user) {
+      const newCoins = coins + q.reward
+      const newClaimedQuests = [...claimedQuests, q.id]
+      
+      // Update UI langsung
+      setCoins(newCoins)
+      setClaimedQuests(newClaimedQuests)
+
+      // Simpan ke Supabase
+      const { error } = await supabase
+        .from('user_stats')
+        .upsert({ 
+          user_id: user.id, 
+          coins: newCoins, 
+          claimed_quests: newClaimedQuests 
+        }, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('Gagal menyimpan klaim misi:', error)
+      }
+    }
+  }
+
+  const handleBuy = async (price) => {
+    if (coins >= price && user) {
+      const newCoins = coins - price
+      
+      // Update UI langsung
+      setCoins(newCoins)
+
+      // Simpan ke Supabase
+      const { error } = await supabase
+        .from('user_stats')
+        .upsert({ 
+          user_id: user.id, 
+          coins: newCoins,
+          claimed_quests: claimedQuests // Sertakan agar tidak keriset jika row baru dibuat
+        }, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('Gagal memproses pembelian:', error)
+      } else {
+        alert('Pembelian berhasil! Item telah ditambahkan ke akun Anda.')
+      }
+    } else if (!user) {
+      alert('Silakan login terlebih dahulu.')
     } else {
       alert('Koin tidak mencukupi!')
     }
   }
 
-  const xpPercentage = (USER_DATA.xp / USER_DATA.nextTierXp) * 100
+  const getTierInfo = (xp) => {
+    if (xp < 500) return { name: 'Cacing Pemula', nextTierXp: 500 }
+    if (xp < 1500) return { name: 'Bronze Calf', nextTierXp: 1500 }
+    if (xp < 4000) return { name: 'Silver Steer', nextTierXp: 4000 }
+    if (xp < 10000) return { name: 'Gold Bull', nextTierXp: 10000 }
+    return { name: 'Diamond Dragon', nextTierXp: xp }
+  }
+
+  const currentTier = getTierInfo(totalXp)
+  const xpPercentage = totalXp >= currentTier.nextTierXp ? 100 : (totalXp / currentTier.nextTierXp) * 100
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || FALLBACK_USER.name
+
+  // Gabungkan leaderboard dari database dengan data user saat ini
+  let mergedLeaderboard = [...leaderboard]
+  // Pastikan user saat ini ada di array meskipun XP-nya 0
+  if (user && !mergedLeaderboard.find(l => l.user_id === user.id)) {
+    mergedLeaderboard.push({ user_id: user.id, xp: totalXp, tier: currentTier.name })
+  }
+  
+  // Sort dan format
+  const dynamicLeaderboard = mergedLeaderboard
+    .sort((a, b) => b.xp - a.xp)
+    .map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+      isMe: user && item.user_id === user.id,
+      name: user && item.user_id === user.id ? userName + ' (Kamu)' : `Investor #${item.user_id.substring(0, 4).toUpperCase()}`
+    }))
+
+  if (progressLoading) return <div style={{ padding: 40, textAlign: 'center', fontWeight: 'bold' }}>Memuat data hadiah...</div>
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 60 }}>
@@ -78,8 +188,11 @@ export default function Rewards() {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
               <div>
-                <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>{USER_DATA.tier}</h2>
-                <p style={{ color: '#9ca3af', fontSize: 15, fontWeight: 500 }}>{USER_DATA.xp} XP / {USER_DATA.nextTierXp} XP menuju Gold Bull</p>
+                <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 2 }}>{userName}</div>
+                <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>{currentTier.name}</h2>
+                <p style={{ color: '#9ca3af', fontSize: 15, fontWeight: 500 }}>
+                  {totalXp} XP {totalXp < currentTier.nextTierXp ? `/ ${currentTier.nextTierXp} XP menuju Rank Selanjutnya` : '(MAX LEVEL)'}
+                </p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: 999 }}>
@@ -176,11 +289,11 @@ export default function Rewards() {
             </div>
             
             <div style={{ background: 'white', border: '1px solid #e2e5ea', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-              {LEADERBOARD.map((user, idx) => (
+              {dynamicLeaderboard.slice(0, 5).map((user, idx) => (
                 <div key={user.rank} style={{ 
                   display: 'flex', alignItems: 'center', padding: '16px 20px',
                   background: user.isMe ? '#f0fdf4' : 'transparent',
-                  borderBottom: idx !== LEADERBOARD.length - 1 ? '1px solid #e2e5ea' : 'none'
+                  borderBottom: idx !== Math.min(dynamicLeaderboard.length, 5) - 1 ? '1px solid #e2e5ea' : 'none'
                 }}>
                   <div style={{ width: 28, fontWeight: 800, color: user.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 16 }}>
                     {user.rank}
