@@ -20,7 +20,7 @@ export default function Login() {
         navigate('/quiz')
       } else {
         // Jika sudah, arahkan ke dashboard
-        navigate('/quiz')
+        navigate('/dashboard')
       }
     }, 1000)
   }
