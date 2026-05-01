@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Heart, X, Zap, ArrowRight, Trophy } from 'lucide-react'
+import { Heart, X, Zap, Trophy } from 'lucide-react'
 import { useLesson } from '../hooks/useCurriculum'
+import { useProgress } from '../hooks/useProgress'
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -131,6 +132,7 @@ export default function LessonPage() {
   const { lessonId } = useParams()
   const navigate = useNavigate()
   const { lesson, slides, questions, loading } = useLesson(lessonId)
+  const { saveProgress } = useProgress()
 
   const [phase, setPhase] = useState('guide')   // 'guide' | 'quiz' | 'finish'
   const [slideIdx, setSlideIdx] = useState(0)
@@ -139,6 +141,9 @@ export default function LessonPage() {
   const [xp, setXp] = useState(0)
   const [feedback, setFeedback] = useState(null) // null | 'correct' | 'wrong'
   const [qKey, setQKey] = useState(0)
+  const [nextLessonId, setNextLessonId] = useState(null)
+  const [nextLessonTitle, setNextLessonTitle] = useState('')
+  const savedRef = useRef(false) // Mencegah double-save
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -147,6 +152,14 @@ export default function LessonPage() {
   )
 
   if (!lesson) return <div>Pelajaran tidak ditemukan.</div>
+
+  // Hitung ID lesson berikutnya (format lesson: l{level}-{urutan})
+  const getNextLessonInfo = () => {
+    const parts = lessonId.split('-')
+    const levelNum = parseInt(parts[0].replace('l', ''))
+    const lessonNum = parseInt(parts[1])
+    return `l${levelNum}-${lessonNum + 1}`
+  }
 
   const totalSteps = slides.length + questions.length
   const currentStep = phase === 'guide' ? slideIdx : phase === 'quiz' ? slides.length + qIdx : totalSteps
@@ -171,7 +184,14 @@ export default function LessonPage() {
     setFeedback(null)
     setQKey(k => k + 1)
     if (qIdx < questions.length - 1) setQIdx(i => i + 1)
-    else setPhase('finish')
+    else {
+      // Simpan progres ke Supabase ketika semua soal selesai
+      if (!savedRef.current) {
+        savedRef.current = true
+        saveProgress(lessonId, xp + (questions[qIdx].xp || 20))
+      }
+      setPhase('finish')
+    }
   }
 
   const q = questions[qIdx]
@@ -179,6 +199,7 @@ export default function LessonPage() {
 
   // ── FINISH SCREEN ────────────────────────────────────────────────────────
   if (phase === 'finish') {
+    const nextId = getNextLessonInfo()
     return (
       <div style={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, padding: 40 }}>
         <div style={{ fontSize: 100 }}><Trophy size={100} color="#FFC107" /></div>
@@ -194,13 +215,23 @@ export default function LessonPage() {
             <div style={{ fontSize: 13, color: '#6b7280', fontWeight: 700, marginTop: 4 }}>Nyawa Tersisa ❤️</div>
           </div>
         </div>
-        <button onClick={() => navigate('/dashboard')} style={{
-          marginTop: 12, padding: '18px 56px', borderRadius: 16, border: 'none',
-          background: '#00D166', color: 'white', fontWeight: 900, fontSize: 18,
-          cursor: 'pointer', boxShadow: '0 6px 0 #00a652'
-        }}>
-          Kembali ke Peta Belajar 🗺️
-        </button>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button onClick={() => navigate(`/lesson/${nextId}`)} style={{
+            marginTop: 12, padding: '18px 40px', borderRadius: 16, border: 'none',
+            background: '#00D166', color: 'white', fontWeight: 900, fontSize: 18,
+            cursor: 'pointer', boxShadow: '0 6px 0 #00a652',
+            display: 'flex', alignItems: 'center', gap: 10
+          }}>
+            Pelajaran Berikutnya →
+          </button>
+          <button onClick={() => navigate('/dashboard')} style={{
+            marginTop: 12, padding: '18px 40px', borderRadius: 16,
+            border: '2px solid #e2e5ea', background: 'white',
+            color: '#6b7280', fontWeight: 700, fontSize: 16, cursor: 'pointer'
+          }}>
+            Kembali ke Peta 🗺️
+          </button>
+        </div>
       </div>
     )
   }
