@@ -149,6 +149,105 @@ app.post('/api/buy-item', async (req, res) => {
   }
 });
 
+// Endpoint Kurangi Nyawa (Secure API)
+app.post('/api/deduct-heart', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Tidak ada token autentikasi' });
+  }
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authData.user) {
+      return res.status(401).json({ error: 'Token tidak valid' });
+    }
+
+    const userId = authData.user.id;
+
+    // Ambil nyawa saat ini
+    const { data: stats, error: statsError } = await supabase
+      .from('user_stats')
+      .select('hearts')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (statsError) throw statsError;
+
+    const currentHearts = stats?.hearts ?? 5; // Default 5 jika belum ada data
+
+    if (currentHearts <= 0) {
+      return res.status(400).json({ error: 'Nyawa sudah habis!' });
+    }
+
+    const newHearts = currentHearts - 1;
+
+    const { data: updateData, error: updateError } = await supabase
+      .from('user_stats')
+      .upsert({
+        user_id: userId,
+        hearts: newHearts
+      }, { onConflict: 'user_id' })
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    res.status(200).json({ success: true, hearts: newHearts });
+  } catch (err) {
+    console.error('Error deduct heart:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Endpoint untuk beli nyawa (Refill)
+app.post('/api/refill-hearts', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !authData.user) return res.status(401).json({ error: 'Invalid token' });
+
+    const userId = authData.user.id;
+    const REFILL_COST = 50;
+
+    // Ambil stats saat ini
+    const { data: stats, error: statsError } = await supabase
+      .from('user_stats')
+      .select('coins, hearts')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (statsError) throw statsError;
+
+    if (!stats || stats.coins < REFILL_COST) {
+      return res.status(400).json({ error: 'Koin tidak cukup' });
+    }
+
+    if (stats.hearts >= 5) {
+      return res.status(400).json({ error: 'Nyawa sudah penuh' });
+    }
+
+    // Update database
+    const { error: updateError } = await supabase
+      .from('user_stats')
+      .update({ 
+        hearts: 5, 
+        coins: stats.coins - REFILL_COST 
+      })
+      .eq('user_id', userId);
+
+    if (updateError) throw updateError;
+
+    res.status(200).json({ success: true, message: 'Nyawa berhasil dipulihkan' });
+  } catch (err) {
+    console.error('Error refill hearts:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server Express berjalan aman di http://localhost:${PORT}`);
 });

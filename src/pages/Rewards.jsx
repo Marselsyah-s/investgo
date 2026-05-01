@@ -229,8 +229,12 @@ export default function Rewards() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: 999 }}>
-                  <Star size={18} fill="#fbbf24" color="#fbbf24" />
-                  <span style={{ fontWeight: 800, fontSize: 18, color: '#fbbf24' }}>{coins} Koin</span>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', background: '#FFC107',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontSize: 13, fontWeight: 900
+                  }}>C</div>
+                  <span style={{ fontWeight: 800, fontSize: 18, color: '#FFC107' }}>{coins.toLocaleString('id-ID')} Koin</span>
                 </div>
               </div>
             </div>
@@ -296,11 +300,11 @@ export default function Rewards() {
                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
-                          Klaim {q.reward} <Star size={12} fill="white" style={{display:'inline', position:'relative', top:1}} />
+                          Klaim {q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: 'white', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#00D166', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </button>
                       ) : (
                         <div style={{ padding: '8px 16px', border: '2px solid #e5e7eb', color: '#9ca3af', borderRadius: 12, fontWeight: 700, fontSize: 14 }}>
-                          +{q.reward} Koin
+                          +{q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#e5e7eb', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </div>
                       )}
                     </div>
@@ -380,7 +384,7 @@ export default function Rewards() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#fbbf24'; e.currentTarget.style.color = '#d97706' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#111827' }}
                     >
-                      {item.price} <Star size={12} fill="currentColor" style={{display:'inline', position:'relative', top:1}} />
+                      {item.price} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#FFC107', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                     </button>
                   )}
                 </div>
