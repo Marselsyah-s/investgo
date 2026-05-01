@@ -23,6 +23,7 @@ export default function Rewards() {
   const [quests, setQuests] = useState([])
   const [coins, setCoins] = useState(FALLBACK_USER.coins)
   const [claimedQuests, setClaimedQuests] = useState([])
+  const [showNoCoinsModal, setShowNoCoinsModal] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({data}) => {
@@ -127,7 +128,7 @@ export default function Rewards() {
     } else if (!user) {
       alert('Silakan login terlebih dahulu.')
     } else {
-      alert('Koin tidak mencukupi!')
+      setShowNoCoinsModal(true)
     }
   }
 
@@ -351,6 +352,59 @@ export default function Rewards() {
 
         </div>
       </div>
+      {/* Insufficient Coins Modal */}
+      {showNoCoinsModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, animation: 'fadeIn 0.2s ease-out', backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'white', width: '90%', maxWidth: 400, borderRadius: 32, padding: 40,
+            textAlign: 'center', boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+            animation: 'modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            <style>{`
+              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes modalSlideUp { 
+                from { opacity: 0; transform: translateY(30px) scale(0.9); } 
+                to { opacity: 1; transform: translateY(0) scale(1); } 
+              }
+            `}</style>
+            
+            <div style={{ 
+              width: 90, height: 90, background: '#fff9c4', borderRadius: '50%', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px'
+            }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', background: '#FFC107',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 28, fontWeight: 900, boxShadow: '0 6px 12px rgba(255,193,7,0.4)'
+              }}>C</div>
+            </div>
+
+            <h3 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 12 }}>Koin Tidak Cukup</h3>
+            <p style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.6, marginBottom: 36 }}>
+              Yah! Kamu belum punya cukup koin untuk membeli item ini. Terus kumpulkan koin dari kuis dan misi harian ya!
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button 
+                onClick={() => setShowNoCoinsModal(false)}
+                style={{
+                  width: '100%', padding: '18px', background: '#FFC107', color: 'white',
+                  borderRadius: 20, border: 'none', fontWeight: 800, fontSize: 16,
+                  cursor: 'pointer', boxShadow: '0 4px 0 #ff8f00', transition: 'all 0.1s'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                SIAP, LANJUT BELAJAR!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
