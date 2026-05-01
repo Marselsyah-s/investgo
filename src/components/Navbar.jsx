@@ -15,7 +15,6 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Fitur', href: '#features' },
     { label: 'Cara Kerja', href: '#how-it-works' },
-    { label: 'Testimoni', href: '#testimonials' },
   ]
 
   return (

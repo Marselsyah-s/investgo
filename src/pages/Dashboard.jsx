@@ -20,17 +20,18 @@ export default function Dashboard() {
           <h2 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 8, position: 'relative', zIndex: 2 }}>
             Pelajaran Saham Hari Ini
           </h2>
-          <p style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.6, maxWidth: '70%', position: 'relative', zIndex: 2 }}>
+          <p style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.6, maxWidth: '60%', position: 'relative', zIndex: 2 }}>
             Lanjutkan perjalanan Anda untuk menjadi investor handal. Selesaikan unit "Dasar-Dasar Candlestick" untuk bonus XP.
           </p>
           
           {/* Decorative Stars/Chart in background */}
-          <div style={{ position: 'absolute', right: 20, bottom: 20, display: 'flex', gap: 10, opacity: 0.3 }}>
-            <svg width="100" height="80" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 60L30 40L50 50L80 20" stroke="#1f2937" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M60 20H80V40" stroke="#1f2937" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+          <div style={{ position: 'absolute', right: 40, bottom: -10, opacity: 0.2 }}>
+            <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 80L40 40L60 60L90 10" stroke="#1f2937" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M70 10H90V30" stroke="#1f2937" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M40 20L45 10L50 20L60 25L50 30L45 40L40 30L30 25L40 20Z" fill="#1f2937"/>
+              <path d="M15 40L18 32L26 29L18 26L15 18L12 26L4 29L12 32L15 40Z" fill="#1f2937"/>
             </svg>
-            <div style={{ position: 'absolute', top: -10, left: 20, fontSize: 32 }}>✨</div>
           </div>
         </div>
 
@@ -40,7 +41,8 @@ export default function Dashboard() {
           {/* Node 1: Candlestick Basic (Active) */}
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Dashed line down right */}
-            <div style={{ position: 'absolute', top: 100, left: '50%', width: 100, height: 80, borderRight: '4px dashed #c8cdd6', borderBottom: '4px dashed #c8cdd6', borderBottomRightRadius: 20, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 50, left: '50%', width: 160, height: 120, borderLeft: '3px dashed #c8cdd6', borderBottom: '3px dashed #c8cdd6', borderBottomLeftRadius: 16, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 170, left: '50%', marginLeft: 160, width: 3, height: 40, borderLeft: '3px dashed #c8cdd6', zIndex: 0 }} />
             
             <div style={{
               position: 'relative', zIndex: 1, width: 100, height: 100, borderRadius: '50%',
@@ -66,7 +68,8 @@ export default function Dashboard() {
           {/* Node 2: Bull & Bear (Mastered) */}
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 160 }}>
             {/* Dashed line down left */}
-            <div style={{ position: 'absolute', top: 90, right: '50%', width: 120, height: 100, borderLeft: '4px dashed #c8cdd6', borderBottom: '4px dashed #c8cdd6', borderBottomLeftRadius: 20, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 45, right: '50%', width: 320, height: 120, borderRight: '3px dashed #c8cdd6', borderBottom: '3px dashed #c8cdd6', borderBottomRightRadius: 16, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 165, right: '50%', marginRight: 320, width: 3, height: 40, borderRight: '3px dashed #c8cdd6', zIndex: 0 }} />
             
             <div style={{
               position: 'relative', zIndex: 1, width: 90, height: 90, borderRadius: '50%',
@@ -80,7 +83,10 @@ export default function Dashboard() {
           </div>
 
           {/* Node 3: Money Bag 101 */}
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: -80 }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: -160 }}>
+            {/* Dashed line down right */}
+            <div style={{ position: 'absolute', top: 45, left: '50%', width: 160, height: 120, borderLeft: '3px dashed #c8cdd6', borderBottom: '3px dashed #c8cdd6', borderBottomLeftRadius: 16, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 165, left: '50%', marginLeft: 160, width: 3, height: 60, borderLeft: '3px dashed #c8cdd6', zIndex: 0 }} />
             <div style={{
               position: 'relative', zIndex: 1, width: 90, height: 90, borderRadius: '50%',
               background: '#FFC107', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -96,7 +102,7 @@ export default function Dashboard() {
           </div>
 
           {/* Node 4: Locked */}
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 30 }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 50 }}>
             <div style={{
               position: 'relative', zIndex: 1, width: 90, height: 90, borderRadius: '50%',
               background: '#c8cdd6', display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -3,7 +3,7 @@ import Topbar from './Topbar'
 
 export default function DashboardLayout({ children }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F7F9FA' }}>
       <Sidebar />
       <div style={{ flex: 1, marginLeft: 260, display: 'flex', flexDirection: 'column' }}>
         <Topbar />

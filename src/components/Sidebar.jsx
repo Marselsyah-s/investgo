@@ -19,8 +19,8 @@ export default function Sidebar() {
       position: 'fixed',
       left: 0,
       top: 0,
-      background: '#F0F2F5', // Slightly gray background to match the screenshot
-      borderRight: '1px solid #e2e5ea',
+      background: '#F7F9FA',
+      borderRight: 'none',
       display: 'flex',
       flexDirection: 'column',
       padding: '24px 16px',
@@ -28,8 +28,8 @@ export default function Sidebar() {
     }}>
       {/* Logo */}
       <Link to="/" style={{ textDecoration: 'none', padding: '0 12px', marginBottom: 40 }}>
-        <h1 style={{ fontWeight: 800, fontSize: 24, color: '#004d26', letterSpacing: '-0.5px' }}>
-          InvestaGo
+        <h1 style={{ fontWeight: 800, fontSize: 24, color: '#00D166', letterSpacing: '-0.5px' }}>
+          SavvyBull
         </h1>
       </Link>
 
