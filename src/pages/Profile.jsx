@@ -6,6 +6,7 @@ import {
   Edit3, Camera, CheckCircle, AlertCircle,
   Award, BookOpen, TrendingUp, Star
 } from 'lucide-react'
+import { useProgress } from '../hooks/useProgress'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -16,6 +17,8 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const { totalXp, completedLessons, loading: progressLoading } = useProgress()
+  const [claimedQuestsCount, setClaimedQuestsCount] = useState(0)
 
   useEffect(() => {
     const getUser = async () => {
@@ -26,6 +29,18 @@ export default function Profile() {
       }
       setUser(user)
       setDisplayName(user.user_metadata?.display_name || user.user_metadata?.full_name || '')
+      
+      // Fetch claimed quests for achievements count
+      const { data: statsData } = await supabase
+        .from('user_stats')
+        .select('claimed_quests')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      if (statsData?.claimed_quests) {
+        setClaimedQuestsCount(statsData.claimed_quests.length)
+      }
+
       setLoading(false)
     }
     getUser()
@@ -99,10 +114,10 @@ export default function Profile() {
   }
 
   const stats = [
-    { icon: <BookOpen size={20} />, label: 'Pelajaran Selesai', value: '12', color: '#3b82f6' },
-    { icon: <Star size={20} />, label: 'Total XP', value: '2,450', color: '#f59e0b' },
+    { icon: <BookOpen size={20} />, label: 'Pelajaran Selesai', value: completedLessons.size, color: '#3b82f6' },
+    { icon: <Star size={20} />, label: 'Total XP', value: totalXp.toLocaleString('id-ID'), color: '#f59e0b' },
     { icon: <TrendingUp size={20} />, label: 'Streak Harian', value: '7 hari', color: '#10b981' },
-    { icon: <Award size={20} />, label: 'Pencapaian', value: '5', color: '#8b5cf6' },
+    { icon: <Award size={20} />, label: 'Pencapaian', value: claimedQuestsCount, color: '#8b5cf6' },
   ]
 
   return (
