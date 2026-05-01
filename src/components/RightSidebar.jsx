@@ -1,11 +1,66 @@
-import { Award, Zap, CalendarDays } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Award, Zap, CalendarDays, Trophy } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { useProgress } from '../hooks/useProgress'
 
 export default function RightSidebar() {
-  const leaderboard = [
-    { rank: 1, name: 'Kevin Wijaya', xp: '4,200', img: 'https://ui-avatars.com/api/?name=Kevin+Wijaya&background=00D166&color=fff', medal: true },
-    { rank: 2, name: 'Siska Amelia', xp: '3,850', img: 'https://ui-avatars.com/api/?name=Siska+Amelia&background=374151&color=fff' },
-    { rank: 3, name: 'Budi Santoso', xp: '3,100', img: 'https://ui-avatars.com/api/?name=Budi+Santoso&background=ff8f00&color=fff' },
-  ]
+  const { totalXp, loading: progressLoading } = useProgress()
+  const [user, setUser] = useState(null)
+  const [leaderboard, setLeaderboard] = useState([])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({data}) => {
+      if (data?.user) {
+        setUser(data.user)
+      }
+    })
+    fetchGlobalLeaderboard()
+  }, [])
+
+  const fetchGlobalLeaderboard = async () => {
+    const { data, error } = await supabase.from('user_progress').select('user_id, xp_earned')
+    if (!error && data) {
+      const xpByUser = data.reduce((acc, row) => {
+        acc[row.user_id] = (acc[row.user_id] || 0) + row.xp_earned
+        return acc
+      }, {})
+
+      const leaderboardData = Object.keys(xpByUser).map(userId => {
+        const xp = xpByUser[userId]
+        return {
+          user_id: userId,
+          xp: xp,
+          tier: getTierInfo(xp).name,
+        }
+      })
+      setLeaderboard(leaderboardData)
+    }
+  }
+
+  const getTierInfo = (xp) => {
+    if (xp < 500) return { name: 'Cacing Pemula', nextTierXp: 500 }
+    if (xp < 1500) return { name: 'Bronze Calf', nextTierXp: 1500 }
+    if (xp < 4000) return { name: 'Silver Steer', nextTierXp: 4000 }
+    if (xp < 10000) return { name: 'Gold Bull', nextTierXp: 10000 }
+    return { name: 'Diamond Dragon', nextTierXp: xp }
+  }
+
+  const currentTier = getTierInfo(totalXp)
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Investor Pemula'
+
+  let mergedLeaderboard = [...leaderboard]
+  if (user && !mergedLeaderboard.find(l => l.user_id === user.id)) {
+    mergedLeaderboard.push({ user_id: user.id, xp: totalXp, tier: currentTier.name })
+  }
+  
+  const dynamicLeaderboard = mergedLeaderboard
+    .sort((a, b) => b.xp - a.xp)
+    .map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+      isMe: user && item.user_id === user.id,
+      name: user && item.user_id === user.id ? userName + ' (Kamu)' : `Investor #${item.user_id.substring(0, 4).toUpperCase()}`
+    }))
 
   return (
     <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -13,7 +68,7 @@ export default function RightSidebar() {
       {/* Mascot & Speech Bubble */}
       <div style={{ position: 'relative' }}>
         <div style={{
-          background: '#a685ff', // Light purple
+          background: '#a685ff',
           borderRadius: 24,
           borderBottomLeftRadius: 4,
           padding: 20,
@@ -34,59 +89,54 @@ export default function RightSidebar() {
         <div style={{ background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', border: '2px solid #00D166' }}>
           <Award size={20} color="#00D166" style={{ marginBottom: 12 }} />
           <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', letterSpacing: '1px', marginBottom: 4 }}>RANK</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: '#111827' }}>#14</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: '#111827' }}>
+            #{dynamicLeaderboard.find(l => l.isMe)?.rank || '-'}
+          </div>
         </div>
         <div style={{ background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', border: '2px solid #a685ff' }}>
           <Zap size={20} color="#7C4DFF" style={{ marginBottom: 12 }} />
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', letterSpacing: '1px', marginBottom: 4 }}>XP GOAL</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: '#111827' }}>85%</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', letterSpacing: '1px', marginBottom: 4 }}>TOTAL XP</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: '#111827' }}>{totalXp}</div>
         </div>
       </div>
 
-      {/* Leaderboard Card */}
-      <div style={{ background: 'white', borderRadius: 24, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h3 style={{ fontWeight: 800, fontSize: 18, color: '#111827', margin: 0 }}>Leaderboard</h3>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#00D166', cursor: 'pointer' }}>View All</span>
+      {/* Leaderboard Card - Matching Rewards Page style */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Trophy size={20} color="#fbbf24" />
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#111827', margin: 0 }}>Papan Skor</h3>
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#00D166', cursor: 'pointer' }}>Lihat Semua</span>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {leaderboard.map((user, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              background: i === 0 ? '#fffde7' : 'transparent',
-              padding: i === 0 ? '12px 16px' : '0 16px',
-              borderRadius: 16,
-              marginLeft: i === 0 ? -16 : 0,
-              marginRight: i === 0 ? -16 : 0,
-              borderLeft: i === 0 ? '4px solid #FFC107' : 'none'
+        
+        <div style={{ background: 'white', border: '1px solid #e2e5ea', borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          {dynamicLeaderboard.slice(0, 5).map((u, idx) => (
+            <div key={u.rank} style={{ 
+              display: 'flex', alignItems: 'center', padding: '12px 16px',
+              background: u.isMe ? '#f0fdf4' : 'transparent',
+              borderBottom: idx !== Math.min(dynamicLeaderboard.length, 5) - 1 ? '1px solid #e2e5ea' : 'none'
             }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: i === 0 ? '#FFC107' : '#6b7280', width: 20 }}>{user.rank}</div>
-              <img src={user.img} alt={user.name} style={{ width: 40, height: 40, borderRadius: '50%' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{user.name}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>{user.xp} XP</div>
+              <div style={{ width: 24, fontWeight: 800, color: u.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 14 }}>
+                {u.rank}
               </div>
-              {user.medal && <div style={{ color: '#FFC107' }}>🏆</div>}
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e5e7eb', marginRight: 12 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, color: u.isMe ? '#00a652' : '#111827', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
+                  {u.name}
+                </div>
+                <div style={{ fontSize: 10, color: '#6b7280' }}>{u.tier}</div>
+              </div>
+              <div style={{ fontWeight: 800, color: '#111827', fontSize: 13 }}>
+                {u.xp} <span style={{ fontSize: 10, color: '#9ca3af' }}>XP</span>
+              </div>
             </div>
           ))}
-
-          <div style={{ height: 1, background: '#e2e5ea', margin: '8px 0' }} />
-
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 16,
-            background: '#F0F2F5', padding: '12px 16px', borderRadius: 16,
-            marginLeft: -16, marginRight: -16
-          }}>
-            <div style={{ fontWeight: 800, fontSize: 16, color: '#00D166', width: 20 }}>14</div>
-            <img src="https://ui-avatars.com/api/?name=Anda&background=1f2937&color=fff" alt="Anda" style={{ width: 40, height: 40, borderRadius: '50%' }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>Anda (Level 12)</div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>2,450 XP</div>
-            </div>
-          </div>
+          {dynamicLeaderboard.length === 0 && (
+            <div style={{ padding: 20, textAlign: 'center', fontSize: 12, color: '#9ca3af' }}>Memuat peringkat...</div>
+          )}
         </div>
-      </div>
+      </section>
 
       {/* Tantangan Harian */}
       <div style={{ background: '#FFC107', borderRadius: 24, padding: 24, color: '#111827', boxShadow: '0 8px 24px rgba(255,193,7,0.2)' }}>
@@ -108,3 +158,4 @@ export default function RightSidebar() {
     </div>
   )
 }
+
