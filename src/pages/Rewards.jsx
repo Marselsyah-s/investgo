@@ -213,7 +213,8 @@ export default function Rewards() {
             width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg, #e5e7eb, #9ca3af)',
             border: inventory.includes('2') ? '4px solid #3b82f6' : '4px solid #4b5563', 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: inventory.includes('2') ? '0 0 20px rgba(59, 130, 246, 0.6)' : '0 8px 16px rgba(0,0,0,0.2)'
+            boxShadow: inventory.includes('2') ? '0 0 20px rgba(59, 130, 246, 0.6)' : '0 8px 16px rgba(0,0,0,0.2)',
+            overflow: 'hidden'
           }}>
             {inventory.includes('2') ? <Crown size={48} color="white" /> : <Shield size={48} color="#4b5563" />}
           </div>
@@ -330,22 +331,30 @@ export default function Rewards() {
             </div>
             
             <div style={{ background: 'white', border: '1px solid #e2e5ea', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-              {dynamicLeaderboard.slice(0, 5).map((user, idx) => (
-                <div key={user.rank} style={{ 
+              {dynamicLeaderboard.slice(0, 5).map((entry, idx) => (
+                <div key={entry.rank} style={{ 
                   display: 'flex', alignItems: 'center', padding: '16px 20px',
-                  background: user.isMe ? '#f0fdf4' : 'transparent',
+                  background: entry.isMe ? '#f0fdf4' : 'transparent',
                   borderBottom: idx !== Math.min(dynamicLeaderboard.length, 5) - 1 ? '1px solid #e2e5ea' : 'none'
                 }}>
-                  <div style={{ width: 28, fontWeight: 800, color: user.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 16 }}>
-                    {user.rank}
+                  <div style={{ width: 28, fontWeight: 800, color: entry.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 16 }}>
+                    {entry.rank}
                   </div>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e5e7eb', marginRight: 16 }} />
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e5e7eb', marginRight: 16, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {entry.isMe && user?.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ fontSize: 18, fontWeight: 800, color: '#9ca3af' }}>
+                        {entry.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: user.isMe ? '#00a652' : '#111827', fontSize: 15 }}>{user.name}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>{user.tier}</div>
+                    <div style={{ fontWeight: 700, color: entry.isMe ? '#00a652' : '#111827', fontSize: 15 }}>{entry.name}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{entry.tier}</div>
                   </div>
                   <div style={{ fontWeight: 800, color: '#111827' }}>
-                    {user.xp} <span style={{ fontSize: 11, color: '#9ca3af' }}>XP</span>
+                    {entry.xp} <span style={{ fontSize: 11, color: '#9ca3af' }}>XP</span>
                   </div>
                 </div>
               ))}

@@ -44,9 +44,23 @@ export default function Topbar() {
   }
 
   useEffect(() => {
+    // Initial fetch
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUser(user)
     })
+
+    // Listen for changes (including metadata updates)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const getInitial = () => {
@@ -286,14 +300,25 @@ export default function Topbar() {
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#00D166'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,209,102,0.2)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e5ea'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
       >
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #00D166, #00a652)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', fontWeight: 800, fontSize: 14, flexShrink: 0
-        }}>
-          {getInitial()}
-        </div>
+        {user?.user_metadata?.avatar_url ? (
+          <img 
+            src={user.user_metadata.avatar_url} 
+            alt="Profile"
+            style={{
+              width: 32, height: 32, borderRadius: '50%',
+              objectFit: 'cover', flexShrink: 0
+            }}
+          />
+        ) : (
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #00D166, #00a652)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontWeight: 800, fontSize: 14, flexShrink: 0
+          }}>
+            {getInitial()}
+          </div>
+        )}
         <span style={{ fontSize: 14, fontWeight: 600, color: '#374151', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {getDisplayName()}
         </span>

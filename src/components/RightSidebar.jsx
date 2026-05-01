@@ -9,12 +9,25 @@ export default function RightSidebar() {
   const [leaderboard, setLeaderboard] = useState([])
 
   useEffect(() => {
-    supabase.auth.getUser().then(({data}) => {
-      if (data?.user) {
-        setUser(data.user)
+    // Initial fetch
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser(user)
+    })
+
+    // Listen for auth/metadata changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+      } else {
+        setUser(null)
       }
     })
+
     fetchGlobalLeaderboard()
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const fetchGlobalLeaderboard = async () => {
@@ -120,7 +133,15 @@ export default function RightSidebar() {
               <div style={{ width: 24, fontWeight: 800, color: u.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 14 }}>
                 {u.rank}
               </div>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e5e7eb', marginRight: 12 }} />
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e5e7eb', marginRight: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {u.isMe && user?.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#9ca3af' }}>
+                    {u.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, color: u.isMe ? '#00a652' : '#111827', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
                   {u.name}
