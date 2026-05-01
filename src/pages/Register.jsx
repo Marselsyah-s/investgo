@@ -109,12 +109,12 @@ export default function Register() {
             Daftarkan dirimu dan mulailah perjalanan luar biasa dari cacing kecil menjadi naga investasi.
           </p>
 
-          {/* Dragon Image */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', marginLeft: -10, marginRight: -10 }}>
+          {/* Dragon Image — centered */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 0 24px' }}>
             <img
               src={dragonHero}
               alt="Dragon and worm illustration"
-              style={{ width: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+              style={{ width: '90%', borderRadius: 16, objectFit: 'cover', display: 'block', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}
             />
           </div>
         </div>
