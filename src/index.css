@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* ===== DESIGN SYSTEM: InvestaGo ===== */
+  /* ===== DESIGN SYSTEM: InvestGo ===== */
 
   /* Primary - Green #00D166 */
   --color-primary-50: #e6fff2;
@@ -70,7 +70,9 @@
 }
 
 /* ===== BASE STYLES ===== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -90,13 +92,16 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #F0F2F5;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #c8cdd6;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #00D166;
 }
@@ -122,11 +127,13 @@ body {
   box-shadow: 0 4px 16px rgba(0, 209, 102, 0.3);
   text-decoration: none;
 }
+
 .btn-primary:hover {
   background-color: #00a652;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(0, 209, 102, 0.4);
 }
+
 .btn-primary:active {
   transform: translateY(0px);
 }
@@ -148,6 +155,7 @@ body {
   transition: all 0.2s ease;
   text-decoration: none;
 }
+
 .btn-secondary:hover {
   background-color: #e2e5ea;
   transform: translateY(-1px);
@@ -170,6 +178,7 @@ body {
   transition: all 0.2s ease;
   text-decoration: none;
 }
+
 .btn-inverted:hover {
   background-color: #374151;
   transform: translateY(-1px);
@@ -192,6 +201,7 @@ body {
   transition: all 0.2s ease;
   text-decoration: none;
 }
+
 .btn-outlined:hover {
   border-color: #00D166;
   color: #00D166;
@@ -206,6 +216,7 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
 }
+
 .card:hover {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
   transform: translateY(-2px);
@@ -225,6 +236,7 @@ body {
   transition: all 0.2s ease;
   border: none;
 }
+
 .icon-btn-primary:hover {
   background-color: #00a652;
   transform: scale(1.05);
@@ -299,6 +311,7 @@ body {
   width: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
 .input-search:focus {
   border-color: #00D166;
   background-color: white;
@@ -306,9 +319,17 @@ body {
 }
 
 /* Divider line colors */
-.divider-primary { border-color: #00D166; }
-.divider-secondary { border-color: #FFC107; }
-.divider-tertiary { border-color: #7C4DFF; }
+.divider-primary {
+  border-color: #00D166;
+}
+
+.divider-secondary {
+  border-color: #FFC107;
+}
+
+.divider-tertiary {
+  border-color: #7C4DFF;
+}
 
 /* Animations */
 @keyframes fadeInUp {
@@ -316,6 +337,7 @@ body {
     opacity: 0;
     transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -323,34 +345,67 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 209, 102, 0.4); }
-  50% { box-shadow: 0 0 0 12px rgba(0, 209, 102, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 209, 102, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px rgba(0, 209, 102, 0);
+  }
 }
 
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease forwards;
 }
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease forwards;
 }
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
 .animate-pulse-green {
   animation: pulse-green 2s ease-in-out infinite;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
