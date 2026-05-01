@@ -168,29 +168,19 @@ export default function Dashboard() {
                   const currentIdx = startIdx + i
                   const pos = nodePositions[currentIdx]
                   const localY = pos.cy - (startIdx * VERTICAL_GAP)
-<<<<<<< HEAD
-                  const isLocked = currentIdx > 0 // Temporary logic: all except first are locked
-
-=======
                   const isDone = completedLessons.has(less.id)
                   
                   // Lesson pertama selalu terbuka. Lesson berikutnya terbuka jika lesson sebelumnya sudah selesai.
                   const prevLesson = allLessons[currentIdx - 1]
                   const isLocked = currentIdx > 0 && !completedLessons.has(prevLesson?.id)
                   
->>>>>>> c1d81a909cfdf296a2e6def808d9d42d01bd296a
                   return (
                     <div key={less.id} style={{ position: 'absolute', left: pos.cx - pos.r, top: localY - pos.r, width: pos.r * 2, height: pos.r * 2 }}>
                       <div
                         onClick={() => !isLocked && navigate(`/lesson/${less.id}`)}
                         style={{
-<<<<<<< HEAD
-                          width: '100%', height: '100%', borderRadius: '50%',
-                          background: isLocked ? '#c8cdd6' : lvl.color,
-=======
                           width: '100%', height: '100%', borderRadius: '50%', 
                           background: isLocked ? '#c8cdd6' : isDone ? '#00a652' : lvl.color,
->>>>>>> c1d81a909cfdf296a2e6def808d9d42d01bd296a
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           boxShadow: isLocked ? '0 8px 0 #a0a8b5' : isDone ? '0 8px 0 #007a3d' : `0 8px 0 ${lvl.shadow_color}`,
                           cursor: isLocked ? 'default' : 'pointer',
@@ -201,16 +191,12 @@ export default function Dashboard() {
                         onMouseEnter={e => !isLocked && (e.currentTarget.style.transform = 'scale(1.08)')}
                         onMouseLeave={e => !isLocked && (e.currentTarget.style.transform = 'scale(1)')}
                       >
-<<<<<<< HEAD
-                        {isLocked ? <Lock size={24} color="#6b7280" /> : <span style={{ fontSize: 24 }}>{less.emoji}</span>}
-=======
                         {isLocked
                           ? <Lock size={24} color="#6b7280" />
                           : isDone
                             ? <CheckCircle size={28} color="white" />
                             : <span style={{fontSize: 24}}>{less.emoji}</span>
                         }
->>>>>>> c1d81a909cfdf296a2e6def808d9d42d01bd296a
                       </div>
 
                       {/* Label */}
