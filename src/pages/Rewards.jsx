@@ -119,7 +119,7 @@ export default function Rewards() {
         }
       } catch (error) {
         console.error('API Error:', error)
-        alert('Server backend (Express) sedang offline. Pastikan npm run dev dijalankan di folder server.')
+        alert('Gagal menghubungi server. Silakan coba lagi nanti atau hubungi bantuan jika masalah berlanjut.')
       }
     }
   }
@@ -159,7 +159,7 @@ export default function Rewards() {
       }
     } catch (error) {
       console.error('API Error:', error)
-      alert('Server backend (Express) sedang offline. Pastikan npm run dev dijalankan di folder server.')
+      alert('Gagal menghubungi server. Silakan coba lagi nanti.')
     }
   }
 
