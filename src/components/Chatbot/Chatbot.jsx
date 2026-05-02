@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Paperclip, Send, User, Bot, Flame, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import './Chatbot.css';
 
 const Chatbot = () => {
@@ -91,15 +92,56 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: input, is_roasting: isRoasting, pdf_context: currentPdfContext, image_data: currentImageData })
-        });
-        const data = await response.json();
-        setMessages([...newMessages, { sender: 'bot', text: data.reply }]);
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      let replyText = "";
+      
+      if (apiKey) {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        
+        let promptText = `Kamu adalah Bang Cuan, seorang pakar investasi dan mentor finansial gaul dari InvestGo. Gaya bicara lu santai, asik, pakai bahasa gaul Indonesia (lu, gw, bro, bosku). \n\n`;
+        
+        if (isRoasting) {
+          promptText += `MODE ROASTING AKTIF: Lu harus roasting portofolio atau pertanyaan user dengan pedas, sarkas, tapi tetap ngasih insight edukasi di akhir biar mereka sadar kesalahannya. Jangan ragu buat ngejek gaya investasi mereka yang cupu.\n\n`;
+        } else {
+          promptText += `MODE EDUKASI AKTIF: Berikan jawaban edukatif, jelas, dan memotivasi tentang investasi atau saham.\n\n`;
+        }
+        
+        if (currentPdfContext) {
+          promptText += `Ini ada konteks dokumen PDF dari user:\n"""\n${currentPdfContext}\n"""\n\n`;
+        }
+        
+        promptText += `Pertanyaan User: ${input}`;
+        
+        const contents = [
+          { role: "user", parts: [{ text: promptText }] }
+        ];
+        
+        if (currentImageData) {
+           contents[0].parts.push({
+             inlineData: {
+               data: currentImageData,
+               mimeType: "image/jpeg"
+             }
+           });
+        }
+
+        const result = await model.generateContent({ contents });
+        replyText = result.response.text();
+      } else {
+        // Fallback to Pollinations AI
+        let systemPrompt = `Kamu adalah Bang Cuan, mentor investasi. ${isRoasting ? 'Roasting dengan pedas tapi edukatif.' : 'Beri jawaban edukatif.'}`;
+        let fullPrompt = `${systemPrompt}\nUser: ${input}`;
+        if (currentPdfContext) fullPrompt += `\nKonteks: ${currentPdfContext}`;
+        
+        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`);
+        replyText = await res.text();
+      }
+      
+      setMessages([...newMessages, { sender: 'bot', text: replyText }]);
     } catch (error) {
-        setMessages([...newMessages, { sender: 'bot', text: 'Waduh, server Bang Cuan lagi ngadat nih bro.' }]);
+        console.error("Chat error:", error);
+        setMessages([...newMessages, { sender: 'bot', text: 'Waduh, otak Bang Cuan lagi ngadat nih bro. Cek koneksi atau limit API lu ya.' }]);
     } finally {
         setIsLoading(false);
     }
