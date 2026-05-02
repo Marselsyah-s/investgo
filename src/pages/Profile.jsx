@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
@@ -6,6 +6,7 @@ import {
   Edit3, Camera, CheckCircle, AlertCircle,
   Award, BookOpen, TrendingUp, Star
 } from 'lucide-react'
+import { useProgress } from '../hooks/useProgress'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -16,6 +17,10 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const { totalXp, completedLessons, loading: progressLoading } = useProgress()
+  const [claimedQuestsCount, setClaimedQuestsCount] = useState(0)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -26,6 +31,18 @@ export default function Profile() {
       }
       setUser(user)
       setDisplayName(user.user_metadata?.display_name || user.user_metadata?.full_name || '')
+      
+      // Fetch claimed quests for achievements count
+      const { data: statsData } = await supabase
+        .from('user_stats')
+        .select('claimed_quests')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      if (statsData?.claimed_quests) {
+        setClaimedQuestsCount(statsData.claimed_quests.length)
+      }
+
       setLoading(false)
     }
     getUser()
@@ -52,6 +69,53 @@ export default function Profile() {
       setErrorMsg(err.message || 'Gagal menyimpan perubahan.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploading(true)
+      setErrorMsg('')
+
+      // 1. Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('profiles') // Asumsi bucket bernama 'profiles'
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath)
+
+      // 3. Update User Metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      })
+
+      if (updateError) throw updateError
+
+      // 4. Update UI
+      setUser(prev => ({
+        ...prev,
+        user_metadata: { ...prev.user_metadata, avatar_url: publicUrl }
+      }))
+      setSuccessMsg('Foto profil berhasil diperbarui!')
+      setTimeout(() => setSuccessMsg(''), 3000)
+
+    } catch (err) {
+      console.error(err)
+      setErrorMsg('Gagal mengunggah foto. Pastikan bucket "profiles" ada di Supabase.')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -99,10 +163,10 @@ export default function Profile() {
   }
 
   const stats = [
-    { icon: <BookOpen size={20} />, label: 'Pelajaran Selesai', value: '12', color: '#3b82f6' },
-    { icon: <Star size={20} />, label: 'Total XP', value: '2,450', color: '#f59e0b' },
+    { icon: <BookOpen size={20} />, label: 'Pelajaran Selesai', value: completedLessons.size, color: '#3b82f6' },
+    { icon: <Star size={20} />, label: 'Total XP', value: totalXp.toLocaleString('id-ID'), color: '#f59e0b' },
     { icon: <TrendingUp size={20} />, label: 'Streak Harian', value: '7 hari', color: '#10b981' },
-    { icon: <Award size={20} />, label: 'Pencapaian', value: '5', color: '#8b5cf6' },
+    { icon: <Award size={20} />, label: 'Pencapaian', value: claimedQuestsCount, color: '#8b5cf6' },
   ]
 
   return (
@@ -152,24 +216,53 @@ export default function Profile() {
 
       {/* Avatar overlapping card */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: 40, marginTop: -44, marginBottom: 0, position: 'relative', zIndex: 2 }}>
-        <div style={{ position: 'relative' }}>
-          <div style={{
-            width: 88, height: 88, borderRadius: '50%',
-            background: '#1f2937', border: '4px solid white',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32, fontWeight: 800, color: '#00D166',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-          }}>
-            {getInitial()}
-          </div>
+        <div 
+          style={{ position: 'relative', cursor: 'pointer' }}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {user?.user_metadata?.avatar_url ? (
+            <img 
+              src={user.user_metadata.avatar_url} 
+              alt="Avatar"
+              style={{
+                width: 88, height: 88, borderRadius: '50%',
+                objectFit: 'cover', border: '4px solid white',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 88, height: 88, borderRadius: '50%',
+              background: '#1f2937', border: '4px solid white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 32, fontWeight: 800, color: '#00D166',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+            }}>
+              {getInitial()}
+            </div>
+          )}
+          
           <div style={{
             position: 'absolute', bottom: 4, right: 4,
             width: 24, height: 24, borderRadius: '50%',
-            background: '#00D166', border: '2px solid white',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            background: uploading ? '#6b7280' : '#00D166', border: '2px solid white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.2s'
           }}>
-            <Camera size={12} color="white" />
+            {uploading ? (
+              <div style={{ width: 12, height: 12, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+            ) : (
+              <Camera size={12} color="white" />
+            )}
           </div>
+
+          <input 
+            type="file"
+            ref={fileInputRef}
+            onChange={handleAvatarUpload}
+            accept="image/*"
+            style={{ display: 'none' }}
+          />
         </div>
       </div>
 

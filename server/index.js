@@ -248,6 +248,10 @@ app.post('/api/refill-hearts', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server Express berjalan aman di http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server Express berjalan aman di http://localhost:${PORT}`);
+  });
+}
+
+export default app;

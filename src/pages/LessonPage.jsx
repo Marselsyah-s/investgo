@@ -219,7 +219,7 @@ export default function LessonPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         try {
-          fetch('http://localhost:5000/api/deduct-heart', {
+          fetch('/api/deduct-heart', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
