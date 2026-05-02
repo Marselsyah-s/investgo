@@ -249,6 +249,147 @@
   border-top-right-radius: 4px;
 }
 
+/* Markdown styling for bot messages */
+.stitch-message-wrapper.bot .stitch-message-text h1,
+.stitch-message-wrapper.bot .stitch-message-text h2,
+.stitch-message-wrapper.bot .stitch-message-text h3 {
+  margin: 16px 0 8px 0;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text h1 { font-size: 1.3em; }
+.stitch-message-wrapper.bot .stitch-message-text h2 { font-size: 1.15em; }
+.stitch-message-wrapper.bot .stitch-message-text h3 { font-size: 1.05em; }
+
+.stitch-message-wrapper.bot .stitch-message-text h1:first-child,
+.stitch-message-wrapper.bot .stitch-message-text h2:first-child,
+.stitch-message-wrapper.bot .stitch-message-text h3:first-child {
+  margin-top: 0;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text p {
+  margin: 8px 0;
+  line-height: 1.7;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text p:first-child {
+  margin-top: 0;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text p:last-child {
+  margin-bottom: 0;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text strong {
+  font-weight: 700;
+  color: #111827;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text em {
+  font-style: italic;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text ul,
+.stitch-message-wrapper.bot .stitch-message-text ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text li {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text code {
+  background: #e8ecf0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text pre {
+  background: #1f2937;
+  color: #e5e7eb;
+  padding: 14px 18px;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text blockquote {
+  border-left: 3px solid #00D166;
+  padding-left: 14px;
+  margin: 12px 0;
+  color: #4b5563;
+  font-style: italic;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 16px 0;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text a {
+  color: #00D166;
+  text-decoration: underline;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 0.9em;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text th,
+.stitch-message-wrapper.bot .stitch-message-text td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.stitch-message-wrapper.bot .stitch-message-text th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.stitch-pdf-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stitch-message-wrapper.bot .stitch-pdf-attachment {
+  background: #e8f5e9;
+  border-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.stitch-message-wrapper.user .stitch-pdf-attachment {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
 .stitch-uploaded-image {
   max-width: 100%;
   border-radius: 8px;
