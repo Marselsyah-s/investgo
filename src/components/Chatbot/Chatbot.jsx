@@ -98,6 +98,7 @@ const Chatbot = () => {
       if (apiKey) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
         
         let promptText = `Kamu adalah Bang Cuan, seorang pakar investasi dan mentor finansial gaul dari InvestGo. Gaya bicara lu santai, asik, pakai bahasa gaul Indonesia (lu, gw, bro, bosku). \n\n`;
         
