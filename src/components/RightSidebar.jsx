@@ -94,7 +94,7 @@ export default function RightSidebar() {
             "Jangan menaruh semua telurmu dalam satu keranjang. Diversifikasi adalah kunci utama!"
           </p>
         </div>
-        <img src="/mascot.png" alt="Mascot" style={{ width: 100, height: 100, objectFit: 'contain' }} />
+        <img src="/mascot.png" alt="Mascot" style={{ width: 150, height: 150, objectFit: 'contain' }} />
       </div>
 
       {/* Mini Stats */}
