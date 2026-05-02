@@ -10,9 +10,18 @@ import PyPDF2
 import uvicorn
 from typing import Optional
 
-# Setup Environment
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Setup Environment — pastikan .env ditemukan dari lokasi api.py
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(dotenv_path=env_path)
+
+api_key = os.getenv("VITE_GEMINI_API_KEY")
+if not api_key:
+    print("⚠️  WARNING: VITE_GEMINI_API_KEY tidak ditemukan di .env!")
+    print(f"   Mencari .env di: {env_path}")
+else:
+    print(f"✅ API Key loaded (***{api_key[-4:]})")
+
+genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel('models/gemini-2.5-flash')
 
