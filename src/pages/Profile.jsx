@@ -165,7 +165,6 @@ export default function Profile() {
   const stats = [
     { icon: <BookOpen size={20} />, label: 'Pelajaran Selesai', value: completedLessons.size, color: '#3b82f6' },
     { icon: <Star size={20} />, label: 'Total XP', value: totalXp.toLocaleString('id-ID'), color: '#f59e0b' },
-    { icon: <TrendingUp size={20} />, label: 'Streak Harian', value: '7 hari', color: '#10b981' },
     { icon: <Award size={20} />, label: 'Pencapaian', value: claimedQuestsCount, color: '#8b5cf6' },
   ]
 
@@ -268,7 +267,7 @@ export default function Profile() {
 
       {/* Stats */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16,
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
         padding: '24px 0 0', marginBottom: 24
       }}>
         {stats.map((stat) => (
