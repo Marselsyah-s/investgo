@@ -137,7 +137,7 @@ export default function Dashboard() {
               {/* Level Title Header */}
               <div style={{ 
                 background: lvl.color, padding: '16px 24px', borderRadius: 20, 
-                marginBottom: 40, display: 'flex', alignItems: 'center', gap: 16,
+                marginBottom: 80, display: 'flex', alignItems: 'center', gap: 16,
                 boxShadow: `0 8px 0 ${lvl.shadow_color}`
               }}>
                 <span style={{ fontSize: 32 }}>{lvl.icon}</span>
@@ -203,7 +203,7 @@ export default function Dashboard() {
                       {/* Label */}
                       <div style={{ 
                         position: 'absolute', left: '50%', transform: 'translateX(-50%)', 
-                        top: '110%', width: 140, textAlign: 'center' 
+                        top: '120%', width: 140, textAlign: 'center' 
                       }}>
                         <div style={{ fontWeight: 800, fontSize: 13, color: isLocked ? '#9ca3af' : '#111827', lineHeight: 1.2 }}>
                           {less.title}

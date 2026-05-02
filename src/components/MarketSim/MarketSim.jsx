@@ -10,7 +10,7 @@ const OPEN=7850,TICK=900,NEWS_INT=120000,LOT=100;
 const fmt=n=>n.toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtRp=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
 
-export default function MarketSim({balance:initBal=2000000,onTransaction}){
+export default function MarketSim({balance:initBal=10000000,onTransaction}){
   const cvRef=useRef(null);
   const stateRef=useRef({
     price:OPEN,hi:OPEN,lo:OPEN,vol:0,impact:0,

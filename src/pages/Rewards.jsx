@@ -23,6 +23,7 @@ export default function Rewards() {
   const [quests, setQuests] = useState([])
   const [coins, setCoins] = useState(FALLBACK_USER.coins)
   const [claimedQuests, setClaimedQuests] = useState([])
+  const [showNoCoinsModal, setShowNoCoinsModal] = useState(false)
   const [inventory, setInventory] = useState([])
 
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function Rewards() {
         const token = sessionData.session?.access_token
 
         // Panggil API Backend (Express) untuk memvalidasi dan menambahkan koin
-        const response = await fetch('http://localhost:5000/api/claim-quest', {
+        const response = await fetch('/api/claim-quest', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -125,14 +126,17 @@ export default function Rewards() {
 
   const handleBuy = async (item) => {
     if (!user) return alert('Silakan login terlebih dahulu.')
-    if (coins < item.price) return alert('Koin tidak mencukupi!')
+    if (coins < item.price) {
+      setShowNoCoinsModal(true)
+      return
+    }
     if (inventory.includes(String(item.id))) return alert('Item sudah kamu miliki!')
 
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const token = sessionData.session?.access_token
 
-      const response = await fetch('http://localhost:5000/api/buy-item', {
+      const response = await fetch('/api/buy-item', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +213,8 @@ export default function Rewards() {
             width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg, #e5e7eb, #9ca3af)',
             border: inventory.includes('2') ? '4px solid #3b82f6' : '4px solid #4b5563', 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: inventory.includes('2') ? '0 0 20px rgba(59, 130, 246, 0.6)' : '0 8px 16px rgba(0,0,0,0.2)'
+            boxShadow: inventory.includes('2') ? '0 0 20px rgba(59, 130, 246, 0.6)' : '0 8px 16px rgba(0,0,0,0.2)',
+            overflow: 'hidden'
           }}>
             {inventory.includes('2') ? <Crown size={48} color="white" /> : <Shield size={48} color="#4b5563" />}
           </div>
@@ -229,8 +234,12 @@ export default function Rewards() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: 999 }}>
-                  <Star size={18} fill="#fbbf24" color="#fbbf24" />
-                  <span style={{ fontWeight: 800, fontSize: 18, color: '#fbbf24' }}>{coins} Koin</span>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', background: '#FFC107',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontSize: 13, fontWeight: 900
+                  }}>C</div>
+                  <span style={{ fontWeight: 800, fontSize: 18, color: '#FFC107' }}>{coins.toLocaleString('id-ID')} Koin</span>
                 </div>
               </div>
             </div>
@@ -296,11 +305,11 @@ export default function Rewards() {
                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
                         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
-                          Klaim {q.reward} <Star size={12} fill="white" style={{display:'inline', position:'relative', top:1}} />
+                          Klaim {q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: 'white', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#00D166', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </button>
                       ) : (
                         <div style={{ padding: '8px 16px', border: '2px solid #e5e7eb', color: '#9ca3af', borderRadius: 12, fontWeight: 700, fontSize: 14 }}>
-                          +{q.reward} Koin
+                          +{q.reward} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#e5e7eb', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                         </div>
                       )}
                     </div>
@@ -322,22 +331,30 @@ export default function Rewards() {
             </div>
             
             <div style={{ background: 'white', border: '1px solid #e2e5ea', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-              {dynamicLeaderboard.slice(0, 5).map((user, idx) => (
-                <div key={user.rank} style={{ 
+              {dynamicLeaderboard.slice(0, 5).map((entry, idx) => (
+                <div key={entry.rank} style={{ 
                   display: 'flex', alignItems: 'center', padding: '16px 20px',
-                  background: user.isMe ? '#f0fdf4' : 'transparent',
+                  background: entry.isMe ? '#f0fdf4' : 'transparent',
                   borderBottom: idx !== Math.min(dynamicLeaderboard.length, 5) - 1 ? '1px solid #e2e5ea' : 'none'
                 }}>
-                  <div style={{ width: 28, fontWeight: 800, color: user.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 16 }}>
-                    {user.rank}
+                  <div style={{ width: 28, fontWeight: 800, color: entry.rank <= 3 ? '#fbbf24' : '#9ca3af', fontSize: 16 }}>
+                    {entry.rank}
                   </div>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e5e7eb', marginRight: 16 }} />
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e5e7eb', marginRight: 16, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {entry.isMe && user?.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ fontSize: 18, fontWeight: 800, color: '#9ca3af' }}>
+                        {entry.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: user.isMe ? '#00a652' : '#111827', fontSize: 15 }}>{user.name}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>{user.tier}</div>
+                    <div style={{ fontWeight: 700, color: entry.isMe ? '#00a652' : '#111827', fontSize: 15 }}>{entry.name}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{entry.tier}</div>
                   </div>
                   <div style={{ fontWeight: 800, color: '#111827' }}>
-                    {user.xp} <span style={{ fontSize: 11, color: '#9ca3af' }}>XP</span>
+                    {entry.xp} <span style={{ fontSize: 11, color: '#9ca3af' }}>XP</span>
                   </div>
                 </div>
               ))}
@@ -380,7 +397,7 @@ export default function Rewards() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#fbbf24'; e.currentTarget.style.color = '#d97706' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#111827' }}
                     >
-                      {item.price} <Star size={12} fill="currentColor" style={{display:'inline', position:'relative', top:1}} />
+                      {item.price} <div style={{width: 14, height: 14, borderRadius: '50%', background: '#FFC107', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 900, position: 'relative', top: -1, marginLeft: 2}}>C</div>
                     </button>
                   )}
                 </div>
@@ -390,6 +407,59 @@ export default function Rewards() {
 
         </div>
       </div>
+      {/* Insufficient Coins Modal */}
+      {showNoCoinsModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, animation: 'fadeIn 0.2s ease-out', backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'white', width: '90%', maxWidth: 400, borderRadius: 32, padding: 40,
+            textAlign: 'center', boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+            animation: 'modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            <style>{`
+              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes modalSlideUp { 
+                from { opacity: 0; transform: translateY(30px) scale(0.9); } 
+                to { opacity: 1; transform: translateY(0) scale(1); } 
+              }
+            `}</style>
+            
+            <div style={{ 
+              width: 90, height: 90, background: '#fff9c4', borderRadius: '50%', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px'
+            }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', background: '#FFC107',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 28, fontWeight: 900, boxShadow: '0 6px 12px rgba(255,193,7,0.4)'
+              }}>C</div>
+            </div>
+
+            <h3 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 12 }}>Koin Tidak Cukup</h3>
+            <p style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.6, marginBottom: 36 }}>
+              Yah! Kamu belum punya cukup koin untuk membeli item ini. Terus kumpulkan koin dari kuis dan misi harian ya!
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button 
+                onClick={() => setShowNoCoinsModal(false)}
+                style={{
+                  width: '100%', padding: '18px', background: '#FFC107', color: 'white',
+                  borderRadius: 20, border: 'none', fontWeight: 800, fontSize: 16,
+                  cursor: 'pointer', boxShadow: '0 4px 0 #ff8f00', transition: 'all 0.1s'
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                SIAP, LANJUT BELAJAR!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

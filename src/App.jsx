@@ -11,6 +11,7 @@ import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
 import CharakterQuiz from './components/CharakterQuiz/CharakterQuiz'
 import Chatbot from './components/Chatbot/Chatbot'
+import Mentorship from './pages/Mentorship'
 import './index.css'
 
 function App() {
@@ -36,12 +37,14 @@ function App() {
           // Arahkan ke halaman utama (dashboard)
           window.location.href = '/dashboard'; 
         }} />} />
+        
         {/* Dashboard routes wrapped in Layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         <Route path="/rewards" element={<DashboardLayout><Rewards /></DashboardLayout>} />
         <Route path="/profile" element={<DashboardLayout><Profile /></DashboardLayout>} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
         <Route path="/tutor" element={<DashboardLayout><Chatbot /></DashboardLayout>} />
+        <Route path="/mentorship" element={<DashboardLayout><Mentorship /></DashboardLayout>} />
         <Route 
           path="/sandbox" 
           element={
