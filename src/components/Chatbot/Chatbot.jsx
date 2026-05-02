@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Paperclip, Send, User, Bot, Flame } from 'lucide-react';
+import { Paperclip, Send, User, Bot, Flame, FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import './Chatbot.css';
 
 const Chatbot = () => {
@@ -68,18 +69,32 @@ const Chatbot = () => {
   const sendMessage = async () => {
     if (!input.trim() && !selectedImage && !pdfContext) return;
     
-    const newMessages = [...messages, { sender: 'user', text: input, image: imagePreview }];
+    // Capture current PDF state before clearing
+    const currentPdfName = pdfName;
+    const currentPdfContext = pdfContext;
+    const currentImageData = selectedImage;
+
+    const userMessage = { 
+      sender: 'user', 
+      text: input, 
+      image: imagePreview,
+      pdfFile: currentPdfName || null 
+    };
+    const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
     setImagePreview(null);
     setSelectedImage(null);
+    // Clear PDF state after sending so it moves to chat history
+    setPdfName('');
+    setPdfContext('');
     setIsLoading(true);
 
     try {
         const response = await fetch('http://127.0.0.1:8000/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: input, is_roasting: isRoasting, pdf_context: pdfContext, image_data: selectedImage })
+            body: JSON.stringify({ message: input, is_roasting: isRoasting, pdf_context: currentPdfContext, image_data: currentImageData })
         });
         const data = await response.json();
         setMessages([...newMessages, { sender: 'bot', text: data.reply }]);
@@ -130,10 +145,24 @@ const Chatbot = () => {
                 {msg.sender === 'user' ? <User size={20} /> : <Bot size={20} />}
               </div>
               <div className="stitch-message-bubble">
+                {msg.pdfFile && (
+                  <div className="stitch-pdf-attachment">
+                    <FileText size={18} />
+                    <span>{msg.pdfFile}</span>
+                  </div>
+                )}
                 {msg.image && (
                   <img src={msg.image} alt="User upload" className="stitch-uploaded-image" />
                 )}
-                {msg.text && <div className="stitch-message-text">{msg.text}</div>}
+                {msg.text && (
+                  <div className="stitch-message-text">
+                    {msg.sender === 'bot' ? (
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -1,12 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -19,26 +15,23 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Endpoint Klaim Misi Harian (Secure API)
 app.post('/api/claim-quest', async (req, res) => {
   const { questId, rewardCoins } = req.body;
-  const token = req.headers.authorization?.split(' ')[1]; // Ambil token dari header Bearer
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ error: 'Tidak ada token autentikasi' });
   }
 
   try {
-    // 1. Verifikasi Token User (Anti-Kecurangan 1: Memastikan yang request benar-benar user asli)
     const { data: authData, error: authError } = await supabase.auth.getUser(token);
-    
     if (authError || !authData.user) {
       return res.status(401).json({ error: 'Token tidak valid atau sudah kadaluarsa' });
     }
 
     const userId = authData.user.id;
 
-    // 2. Cek ke database apakah misi benar-benar belum diklaim (Anti-Kecurangan 2)
     const { data: stats, error: statsError } = await supabase
       .from('user_stats')
-      .select('coins, claimed_quests')
+      .select('coins, claimed_quests, inventory')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -48,12 +41,10 @@ app.post('/api/claim-quest', async (req, res) => {
     const claimedQuests = stats?.claimed_quests || [];
     const inventory = stats?.inventory || [];
 
-    // Ubah semua elemen ke string untuk memastikan kecocokan
     if (claimedQuests.map(String).includes(String(questId))) {
       return res.status(400).json({ error: 'Misi ini sudah diklaim sebelumnya!' });
     }
 
-    // 3. Update ke database jika semua valid
     const newCoins = currentCoins + rewardCoins;
     const newClaimedQuests = [...claimedQuests, questId];
 
@@ -63,14 +54,13 @@ app.post('/api/claim-quest', async (req, res) => {
         user_id: userId,
         coins: newCoins,
         claimed_quests: newClaimedQuests,
-        inventory: inventory // Pastikan inventory tidak ikut ter-reset
+        inventory: inventory
       }, { onConflict: 'user_id' })
       .select()
       .single();
 
     if (updateError) throw updateError;
 
-    // Kirim respons sukses ke Frontend
     return res.status(200).json({
       message: 'Klaim berhasil!',
       coins: updateData.coins,
@@ -79,7 +69,7 @@ app.post('/api/claim-quest', async (req, res) => {
 
   } catch (error) {
     console.error('Server error:', error);
-    return res.status(500).json({ error: 'Terjadi kesalahan pada server Express' });
+    return res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
 
@@ -94,7 +84,6 @@ app.post('/api/buy-item', async (req, res) => {
 
   try {
     const { data: authData, error: authError } = await supabase.auth.getUser(token);
-    
     if (authError || !authData.user) {
       return res.status(401).json({ error: 'Token tidak valid atau sudah kadaluarsa' });
     }
@@ -145,7 +134,7 @@ app.post('/api/buy-item', async (req, res) => {
 
   } catch (error) {
     console.error('Server error:', error);
-    return res.status(500).json({ error: 'Terjadi kesalahan pada server Express' });
+    return res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
 
@@ -159,14 +148,12 @@ app.post('/api/deduct-heart', async (req, res) => {
 
   try {
     const { data: authData, error: authError } = await supabase.auth.getUser(token);
-    
     if (authError || !authData.user) {
       return res.status(401).json({ error: 'Token tidak valid' });
     }
 
     const userId = authData.user.id;
 
-    // Ambil nyawa saat ini
     const { data: stats, error: statsError } = await supabase
       .from('user_stats')
       .select('hearts')
@@ -175,7 +162,7 @@ app.post('/api/deduct-heart', async (req, res) => {
 
     if (statsError) throw statsError;
 
-    const currentHearts = stats?.hearts ?? 5; // Default 5 jika belum ada data
+    const currentHearts = stats?.hearts ?? 5;
 
     if (currentHearts <= 0) {
       return res.status(400).json({ error: 'Nyawa sudah habis!' });
@@ -201,7 +188,7 @@ app.post('/api/deduct-heart', async (req, res) => {
   }
 });
 
-// Endpoint untuk beli nyawa (Refill)
+// Endpoint Beli Nyawa (Refill)
 app.post('/api/refill-hearts', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -213,7 +200,6 @@ app.post('/api/refill-hearts', async (req, res) => {
     const userId = authData.user.id;
     const REFILL_COST = 50;
 
-    // Ambil stats saat ini
     const { data: stats, error: statsError } = await supabase
       .from('user_stats')
       .select('coins, hearts')
@@ -230,12 +216,11 @@ app.post('/api/refill-hearts', async (req, res) => {
       return res.status(400).json({ error: 'Nyawa sudah penuh' });
     }
 
-    // Update database
     const { error: updateError } = await supabase
       .from('user_stats')
-      .update({ 
-        hearts: 5, 
-        coins: stats.coins - REFILL_COST 
+      .update({
+        hearts: 5,
+        coins: stats.coins - REFILL_COST
       })
       .eq('user_id', userId);
 
@@ -247,11 +232,5 @@ app.post('/api/refill-hearts', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server Express berjalan aman di http://localhost:${PORT}`);
-  });
-}
 
 export default app;
