@@ -95,7 +95,7 @@ export default function Rewards() {
         const token = sessionData.session?.access_token
 
         // Panggil API Backend (Express) untuk memvalidasi dan menambahkan koin
-        const response = await fetch('http://localhost:5000/api/claim-quest', {
+        const response = await fetch('/api/claim-quest', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export default function Rewards() {
       const { data: sessionData } = await supabase.auth.getSession()
       const token = sessionData.session?.access_token
 
-      const response = await fetch('http://localhost:5000/api/buy-item', {
+      const response = await fetch('/api/buy-item', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

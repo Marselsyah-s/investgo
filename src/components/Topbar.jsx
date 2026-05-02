@@ -22,7 +22,7 @@ export default function Topbar() {
     const { data: { session } } = await supabase.auth.getSession()
     
     try {
-      const res = await fetch('http://localhost:5000/api/refill-hearts', {
+      const res = await fetch('/api/refill-hearts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,16 +87,6 @@ export default function Topbar() {
       gap: 16,
       position: 'relative' // Base for popover
     }}>
-      {/* Flame / Streak */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        background: 'white', padding: '8px 16px', borderRadius: 9999,
-        fontWeight: 700, color: '#1f2937', fontSize: 15,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-      }}>
-        <Flame size={18} fill="#ff8f00" color="#ff8f00" />
-        12
-      </div>
       
       {/* Coins / XP - With Click-to-Persist Popover */}
       <div 
