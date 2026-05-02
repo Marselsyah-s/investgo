@@ -8,7 +8,7 @@ export default function Sidebar() {
     { icon: <Map size={22} />, label: 'Learning Path', path: '/dashboard' },
     { icon: <Gift size={22} />, label: 'Rewards & XP', path: '/rewards' },
     { icon: <Bot size={22} />, label: 'AI Tutor', path: '/tutor' },
-    { icon: <BarChart3 size={22} />, label: 'Market Sandbox', path: '/sandbox' },
+    { icon: <BarChart3 size={22} />, label: 'Simulasi Market', path: '/sandbox' },
     { icon: <Users size={22} />, label: 'Mentorship & Funding', path: '/mentorship' },
     { icon: <UserCircle size={22} />, label: 'Profil Saya', path: '/profile' },
   ]
