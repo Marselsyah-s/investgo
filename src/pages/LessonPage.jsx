@@ -212,24 +212,8 @@ export default function LessonPage() {
       setFeedback('correct')
     } else {
       setFeedback('wrong')
-      const newHearts = Math.max(0, hearts - 1)
-      setHearts(newHearts)
-      
-      // Sinkronisasi ke Supabase via Backend (Secure)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        try {
-          fetch('/api/deduct-heart', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            }
-          })
-        } catch (err) {
-          console.error('Gagal sinkronisasi nyawa:', err)
-        }
-      }
+      // Gunakan fungsi dari hook untuk kurangi nyawa (sudah termasuk sinkronisasi DB & fallback)
+      await deductHeart()
     }
   }
 

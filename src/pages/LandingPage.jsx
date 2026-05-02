@@ -54,12 +54,7 @@ const steps = [
 ]
 
 
-const stats = [
-  { value: '50K+', label: 'Pengguna Aktif', icon: <Users size={20} />, color: '#00D166' },
-  { value: '120+', label: 'Modul Belajar', icon: <BookOpen size={20} />, color: '#7C4DFF' },
-  { value: '4.9★', label: 'Rating Pengguna', icon: <Star size={20} />, color: '#FFC107' },
-  { value: '100%', label: 'Gratis Selamanya', icon: <Shield size={20} />, color: '#00D166' },
-]
+
 
 /* ── sub-components ── */
 function HeroSection() {
@@ -172,36 +167,7 @@ function HeroIllustration() {
   )
 }
 
-function StatsBar() {
-  const [ref, visible] = useInView()
-  return (
-    <section ref={ref} style={{ background: '#F0F2F5', padding: '40px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {stats.map((s, i) => (
-            <div key={s.label}
-              className={visible ? 'animate-fade-in-up' : ''}
-              style={{
-                animationDelay: `${i * 0.1}s`, opacity: visible ? 1 : 0,
-                background: 'white', borderRadius: 16, padding: '20px 24px',
-                display: 'flex', alignItems: 'center', gap: 16,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-              }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color }}>
-                {s.icon}
-              </div>
-              <div>
-                <div style={{ fontSize: 24, fontWeight: 800, color: '#111827', lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 500, marginTop: 4 }}>{s.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <style>{`@media(max-width:640px){section > div > div{grid-template-columns:1fr 1fr !important;}}`}</style>
-    </section>
-  )
-}
+
 
 function FeaturesSection() {
   const [ref, visible] = useInView()
@@ -351,7 +317,7 @@ export default function LandingPage() {
     <div>
       <Navbar />
       <HeroSection />
-      <StatsBar />
+
       <FeaturesSection />
       <HowItWorksSection />
 
