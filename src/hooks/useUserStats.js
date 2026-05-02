@@ -81,5 +81,44 @@ export function useUserStats() {
     }
   }
 
-  return { ...stats, loading, refresh }
+  const deductHeart = async () => {
+    // Optimistic update
+    setStats(prev => ({ ...prev, hearts: Math.max(0, prev.hearts - 1) }))
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    try {
+      // Panggil Secure API (Vercel Serverless Function)
+      const response = await fetch('/api/deduct-heart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        // Jika API gagal (misal 404 di lokal), coba fallback ke Supabase Direct
+        // Ini membantu saat development tanpa serverless function aktif
+        console.warn('API /api/deduct-heart gagal, mencoba fallback ke Supabase Direct...')
+        const { data: currentStats } = await supabase
+          .from('user_stats')
+          .select('hearts')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (currentStats) {
+          await supabase
+            .from('user_stats')
+            .update({ hearts: Math.max(0, (currentStats.hearts || 5) - 1) })
+            .eq('user_id', session.user.id)
+        }
+      }
+    } catch (err) {
+      console.error('Error deduct heart:', err)
+    }
+  }
+
+  return { ...stats, loading, refresh, deductHeart }
 }
